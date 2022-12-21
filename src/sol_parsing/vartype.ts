@@ -1,5 +1,5 @@
-import { TypeName } from '@solidity-parser/parser/src/ast-types';
 import assert from 'assert';
+import { ArrayTypeName, ElementaryTypeName, Mapping, TypeName, UserDefinedTypeName } from 'solc-typed-ast';
 import { elementaryTypeNameToByte } from './var_parsing';
 
 export enum VarTypeKind {
@@ -40,7 +40,6 @@ export type MappingVarType = {
   valueType: VarType;
 };
 
-// An abstraction around @solidity-parser/parser's TypeName but with more safety
 export type VarType = ElementaryVarType | MappingVarType | ArrayVarType | UserDefinedVarType;
 
 export function varTypeToString(varType: VarType): string {
@@ -89,30 +88,34 @@ export function isSameType(varType1: VarType, varType2: VarType): boolean {
 
 export function typeNameToVarType(typeName: TypeName): VarType {
   if (typeName.type === 'Mapping') {
+    const mappingTypeNames = typeName as Mapping;
     return {
       type: VarTypeKind.Mapping,
-      keyType: typeNameToVarType(typeName.keyType) as ElementaryVarType | UserDefinedVarType,
-      valueType: typeNameToVarType(typeName.valueType),
+      keyType: typeNameToVarType(mappingTypeNames.vKeyType) as ElementaryVarType | UserDefinedVarType,
+      valueType: typeNameToVarType(mappingTypeNames.vValueType),
     };
   }
   if (typeName.type === 'ArrayTypeName') {
+    const arrayTypeName = typeName as ArrayTypeName;
     return {
       type: VarTypeKind.ArrayTypeName,
-      baseType: typeNameToVarType(typeName.baseTypeName),
-      length: typeName.length,
+      baseType: typeNameToVarType(arrayTypeName.vBaseType),
+      length: arrayTypeName.vLength,
     };
   }
   if (typeName.type === 'ElementaryTypeName') {
+    const elementaryTypeName = typeName as ElementaryTypeName;
     return {
       type: VarTypeKind.ElementaryTypeName,
-      name: typeName.name,
-      stateMutability: typeName.stateMutability,
+      name: elementaryTypeName.name,
+      stateMutability: elementaryTypeName.stateMutability,
     };
   }
   if (typeName.type === 'UserDefinedTypeName') {
+    const userDefinedTypeName = typeName as UserDefinedTypeName;
     return {
       type: VarTypeKind.UserDefinedTypeName,
-      name: typeName.namePath,
+      name: userDefinedTypeName.path!.name!,
     };
   }
   throw new Error('Unknown type: ' + typeName.type);

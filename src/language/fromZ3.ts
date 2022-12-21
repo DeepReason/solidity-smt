@@ -1,8 +1,8 @@
 import { Expr } from 'z3-solver';
-import { Z3SolidityGenerators } from '../sol_parsing/solidityZ3Generator';
 import { OPERATION_TYPE } from './LanguageNode';
-import { SolidityData } from '../sol_parsing/analyze_solidity';
+import { SolidityData } from '../sol_parsing/parse_solidity';
 import { VarType } from '../sol_parsing/vartype';
+import { Z3SolidityGenerators } from "../translate/solidityZ3Generator";
 
 const precedenceOf: Map<OPERATION_TYPE, number> = new Map<OPERATION_TYPE, number>([
   [OPERATION_TYPE.ARRAY_ACCESS, 0],
@@ -27,15 +27,15 @@ const precedenceOf: Map<OPERATION_TYPE, number> = new Map<OPERATION_TYPE, number
   [OPERATION_TYPE.BIT_OR, 10],
   [OPERATION_TYPE.AND, 11],
   [OPERATION_TYPE.OR, 12],
-  [OPERATION_TYPE.TERNARY, 13]
+  [OPERATION_TYPE.TERNARY, 13],
 ]);
 
 type TranslationResult = {
-  text: string,
-  lowestPrecedenceOperator: OPERATION_TYPE,
-  temporal_tag: string,
-  type: VarType
-}
+  text: string;
+  lowestPrecedenceOperator: OPERATION_TYPE;
+  temporal_tag: string;
+  type: VarType;
+};
 
 export function Z3ToText(expr: Expr, solidityData: Z3SolidityGenerators): string {
   return '';

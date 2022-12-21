@@ -1,5 +1,5 @@
 import { Token } from 'antlr4ts';
-import { AbstractParseTreeVisitor } from 'antlr4ts/tree';
+import { AbstractParseTreeVisitor } from 'antlr4ts/tree/AbstractParseTreeVisitor.js';
 import {
   AdditiveContext,
   ArrayAccessContext,
@@ -7,7 +7,9 @@ import {
   BitwiseOrContext,
   BitwiseXorContext,
   BooleanContext,
-  CastContext, CompareEqDistinctContext, CompareIneqContext,
+  CastContext,
+  CompareEqDistinctContext,
+  CompareIneqContext,
   DotExpressionContext,
   DoubleContext,
   ExponentialContext,

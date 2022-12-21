@@ -1,52 +1,25 @@
+import assert from 'assert';
 import {
-  ArrayTypeName,
+  ASTNode,
   ElementaryTypeName,
   EnumDefinition,
-  SourceUnit,
-  StateVariableDeclarationVariable,
+  Mutability,
   StructDefinition,
   TypeName,
   UserDefinedTypeName,
   VariableDeclaration,
-} from '@solidity-parser/parser/src/ast-types';
-import { parse, ParserError } from '@solidity-parser/parser';
-import { Token } from '@solidity-parser/parser/src/types';
-import assert from 'assert';
-
-type ParseResult = SourceUnit & {
-  errors?: any[];
-  tokens?: Token[];
-};
-
-export const parseSolidity = parse;
-export type { ParserError, ParseResult };
+} from 'solc-typed-ast';
 
 export function typeNameToString(typeName: TypeName): string {
-  if (typeName.type === 'Mapping') {
-    return `mapping(${typeNameToString(typeName.keyType)} => ${typeNameToString(typeName.valueType)})`;
-  }
-  if (typeName.type === 'ArrayTypeName') {
-    const base = typeNameToString((typeName as ArrayTypeName).baseTypeName);
-    if (typeName.length) {
-      return `${base}[${(typeName.length as any).number}]`;
-    }
-    return `${base}[]`;
-  }
-  if (typeName.type === 'ElementaryTypeName') {
-    return (typeName as ElementaryTypeName).name;
-  }
-  if (typeName.type === 'UserDefinedTypeName') {
-    return (typeName as UserDefinedTypeName).namePath;
-  }
-  return 'UNKNOWN';
+  return typeName.typeString;
 }
 
 export type UserTypeDefinition = StructDefinition | EnumDefinition;
 
-function userTypeDefinitionToBytes(def: UserTypeDefinition, userTypeDefinitions: UserTypeDefinition[]): number {
+function userTypeDefinitionToBytes(def: UserTypeDefinition): number {
   if (def.type === 'EnumDefinition') {
     const enumDefinition = def as EnumDefinition;
-    const target = enumDefinition.members.length;
+    const target = enumDefinition.vMembers.length;
     let res = 8;
     while (1 << res < target) {
       res += 8;
@@ -55,8 +28,8 @@ function userTypeDefinitionToBytes(def: UserTypeDefinition, userTypeDefinitions:
   } else {
     const structDefinition = def as StructDefinition;
     let bytes = 0;
-    for (const variableDecl of structDefinition.members) {
-      const newBytes = varDeclToBytes(variableDecl, userTypeDefinitions);
+    for (const variableDecl of structDefinition.vMembers) {
+      const newBytes = varDeclToBytes(variableDecl);
       const nextSlot = bytes % 32 === 0 ? bytes : (bytes & ~0x1f) + 32;
       if (bytes + newBytes <= nextSlot) {
         bytes += newBytes;
@@ -72,14 +45,11 @@ function userTypeDefinitionToBytes(def: UserTypeDefinition, userTypeDefinitions:
   }
 }
 
-export function stateVarDeclToBytes(
-  varDecl: StateVariableDeclarationVariable,
-  userTypeDefinitions: UserTypeDefinition[],
-): number {
-  if (varDecl.isImmutable) {
+export function stateVarDeclToBytes(varDecl: VariableDeclaration): number {
+  if (varDecl.mutability === Mutability.Immutable) {
     return 0;
   }
-  return varDeclToBytes(varDecl, userTypeDefinitions);
+  return varDeclToBytes(varDecl);
 }
 
 export function elementaryTypeNameToByte(name: string): number {
@@ -122,20 +92,16 @@ export function elementaryTypeNameToByte(name: string): number {
   return 0;
 }
 
-export function varDeclToBytes(varDecl: VariableDeclaration, userTypeDefinitions: UserTypeDefinition[]): number {
-  const typeName = varDecl.typeName!;
-  if (['Mapping', 'ArrayTypeName'].includes(typeName.type)) {
+export function varDeclToBytes(varDecl: VariableDeclaration): number {
+  const vType = varDecl.vType!;
+  if (['Mapping', 'ArrayTypeName'].includes(vType.type)) {
     return 32;
   }
-  if (typeName.type === 'UserDefinedTypeName') {
-    const structName = (typeName as UserDefinedTypeName).namePath;
-    for (const astStructDefinition of userTypeDefinitions) {
-      if (astStructDefinition.name === structName) {
-        return userTypeDefinitionToBytes(astStructDefinition, userTypeDefinitions);
-      }
-    }
+  if (vType.type === 'UserDefinedTypeName') {
+    const typeDef = (vType as UserDefinedTypeName).vReferencedDeclaration as UserTypeDefinition;
+    return userTypeDefinitionToBytes(typeDef);
   }
-  const name = (typeName as ElementaryTypeName).name;
+  const name = (vType as ElementaryTypeName).name;
 
   if (name === 'string' || name === 'bytes') {
     return 32;

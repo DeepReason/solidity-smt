@@ -2,17 +2,22 @@
   "name": "solidity-smt",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "bin": {
+    "solidity-smt": "build/index.js"
+  },
+  "type": "module",
   "scripts": {
-    "build:antlr": "antlr4ts -visitor src/language/Expr.g4 -o ./generated",
+    "build:antlr": "antlr4 -Dlanguage=JavaScript -visitor src/language/Expr.g4 -o ./generated && antlr4ts -visitor src/language/Expr.g4 -o ./generated",
     "test": "jest -c jest.config.unit.js",
-    "format": "prettier --write './**/*.{js,ts}'"
+    "format": "prettier --write './**/*.{js,ts}'",
+    "config_z3": "bash ./scripts/update_z3_wasm.sh",
+    "build:ts": "tsc --project tsconfig.json && node ./scripts/fix_built.js"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/DeepReason/solidity-smt.git"
   },
-  "author": "",
+  "author": "Walden Yan",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/DeepReason/solidity-smt/issues"
@@ -24,12 +29,15 @@
     "typescript": "^4.9.4"
   },
   "dependencies": {
-    "@solidity-parser/parser": "^0.14.5",
     "antlr4": "^4.12.0-beta.1",
     "antlr4ts": "^0.5.0-alpha.4",
     "antlr4ts-cli": "^0.5.0-alpha.4",
+    "commander": "^9.4.1",
     "jest": "^29.3.1",
-    "solidity-parser": "^0.4.0",
+    "prettier": "^2.8.1",
+    "solc": "^0.8.17",
+    "solc-js": "^1.0.1",
+    "solc-typed-ast": "^11.0.2",
     "ts-jest": "^29.0.3",
     "z3-solver": "file:z3/src/api/js/z3-solver-0.1.0.tgz"
   }
