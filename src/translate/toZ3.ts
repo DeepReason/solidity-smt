@@ -1,5 +1,5 @@
-import { ExprResult, parseExpression } from '../language/parseExpression';
-import { Arith, BitVec, Bool, Expr, Z3Obj } from '../z3/z3';
+import { ExprResult, ILanguageError, parseExpression } from '../language/parseExpression';
+import { makeZ3, Arith, BitVec, Bool, Expr, Z3Obj } from '../z3/z3';
 import {
   BinaryOperationNode,
   CastNode,
@@ -15,31 +15,31 @@ import {
 } from '../language/LanguageNode';
 import {
   AnnotatedExpr,
+  AnnotatedExprGenerator,
   AnnotatedMappingZ3,
   AnnotatedZ3,
+  ASTExpr,
   GlobalStorageZ3,
   isAnnotatedZ3,
   isAnnotatedZ3Expr,
   isAnnotatedZ3Mapping,
   makeZ3Balances,
   makeZ3GlobalStorage,
-  AnnotatedZ3Generator,
+  solidityDataToZ3Generators,
   Z3SolidityGenerators,
-  AnnotatedExprGenerator,
-  ASTExpr,
 } from './solidityZ3Generator';
-import { repr_of_expr } from '../z3/repr';
+import { repr_of_expr } from '../z3';
 import assert from 'assert';
 import {
+  elementaryTypeNameToByte,
   ElementaryVarType,
   isSameType,
   makeElementaryVarType,
+  ParsedSolidityData,
   VarTypeKind,
   varTypeToString,
-} from '../sol_parsing/vartype';
-import { elementaryTypeNameToByte } from '../sol_parsing/var_parsing';
+} from '../sol_parsing';
 import { ParserRuleContext } from 'antlr4ts';
-import { dumps_expr } from '../z3/dumps_loads';
 
 function castToSolidityType(
   uncasted: AnnotatedZ3 | number | bigint | boolean,
@@ -747,4 +747,53 @@ export function parseResultToZ3(parseResult: ExprResult, z3: Z3Obj, solidityData
 
 export function textToZ3(text: string, z3: Z3Obj, solidityData: Z3SolidityGenerators): Expr {
   return parseResultToZ3(parseExpression(text), z3, solidityData);
+}
+
+export async function translateFromParsedSolidity(
+  text: string,
+  contract: string,
+  parsedSolidity: ParsedSolidityData,
+  z3?: Z3Obj,
+): Promise<any> {
+  try {
+    const generators = solidityDataToZ3Generators(parsedSolidity, contract);
+    const parsedInput = parseExpression(text);
+
+    if (parsedInput.hasError) {
+      function getNiceMessage(e: ILanguageError) {
+        const msg = e.message;
+        const missingTokenPattern = /mismatched input '(.*)?' expecting (.*)?/;
+        if (missingTokenPattern.test(msg)) {
+          const match = missingTokenPattern.exec(msg);
+          if (match) {
+            const [, unexpected, expected] = match;
+            return `Unexpected token ${unexpected}`;
+          }
+        }
+        const emptyQVarsPattern = /missing ELEMENTARY_SOLIDITY_VAR_DECL at ']'/;
+        if (emptyQVarsPattern.test(msg)) {
+          return 'No quantified variables provided';
+        }
+        return msg;
+      }
+
+      return {
+        error: parsedInput.parseErrors.map(getNiceMessage).join('\n'),
+      };
+    }
+
+    if (!z3) {
+      z3 = await makeZ3();
+    }
+    const expr = parseResultToZ3(parsedInput, z3, generators);
+    return {
+      expr: expr,
+      warnings: generators.warnings,
+    };
+  } catch (e) {
+    console.error(e);
+    return {
+      error: '' + e,
+    };
+  }
 }

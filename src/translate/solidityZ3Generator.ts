@@ -1,13 +1,21 @@
 import { BitVec, BitVecSort, Expr, SMTArray, SMTArraySort, Z3Obj } from '../z3/z3';
-import { ElementaryVarType, MappingVarType, VarType, VarTypeKind } from '../sol_parsing/vartype';
-import { elementaryTypeNameToByte } from '../sol_parsing/var_parsing';
+import {
+  ContractTypeObject,
+  elementaryTypeNameToByte,
+  ElementaryVarType,
+  MappingVarType,
+  ParsedSolidityData,
+  VarType,
+  VarTypeKind,
+  varTypeToString,
+} from '../sol_parsing';
 import assert from 'assert';
-import { AnySort, Bool, Sort, SortToExprMap, Z3_ast } from 'z3-solver';
-import { ContractTypeObject, ContractVarData, SolidityData } from "../sol_parsing/parse_solidity";
+import { AnySort, Bool, Sort, Z3_ast } from 'z3-solver';
 
 export type Z3SolidityGenerators = {
-  solidityData: SolidityData;
+  solidityData: ParsedSolidityData;
   globalVarZ3Generators: Map<string, AnnotatedZ3Generator>;
+  warnings: string[];
 };
 
 export type GlobalStorageZ3 = SMTArray<
@@ -131,11 +139,15 @@ function solidityVarToUnslottedZ3Generator(type: VarType, contractName: string):
     case VarTypeKind.Mapping:
       return solidityMappingVarToUnslottedZ3Generator(type, contractName);
     default:
-      throw new Error('Unsupported: Var type ' + VarTypeKind[type.type] + ':\n' + JSON.stringify(type, null, 2));
+      throw new Error('Unsupported: Var type ' + varTypeToString(type));
   }
 }
 
-function getGlobalVarZ3Generator(solidityData: SolidityData, contract: string): Map<string, AnnotatedZ3Generator> {
+function getGlobalVarZ3Generator(
+  solidityData: ParsedSolidityData,
+  contract: string,
+  warnings: string[],
+): Map<string, AnnotatedZ3Generator> {
   const globalZ3Vars = new Map<string, AnnotatedZ3Generator>();
 
   const contractId = solidityData.contractId[contract];
@@ -155,17 +167,19 @@ function getGlobalVarZ3Generator(solidityData: SolidityData, contract: string): 
       };
       globalZ3Vars.set(contractVar.name, generator);
     } catch (e: any) {
-      console.log('WARNING: ' + e.message);
-      console.log('WARNING: Skipping global var: ' + contractVar.name);
+      warnings.push('' + e.message);
+      warnings.push('Skipping global var: ' + contractVar.name);
     }
   }
   return globalZ3Vars;
 }
 
-export function solidityDataToZ3Generators(solidityData: SolidityData, contract: string): Z3SolidityGenerators {
-  const globalVarZ3Generators = getGlobalVarZ3Generator(solidityData, contract);
+export function solidityDataToZ3Generators(solidityData: ParsedSolidityData, contract: string): Z3SolidityGenerators {
+  const warnings: string[] = [];
+  const globalVarZ3Generators = getGlobalVarZ3Generator(solidityData, contract, warnings);
   return {
     solidityData,
     globalVarZ3Generators,
+    warnings,
   };
 }

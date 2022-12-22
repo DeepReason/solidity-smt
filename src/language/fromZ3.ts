@@ -1,8 +1,7 @@
 import { Expr } from 'z3-solver';
 import { OPERATION_TYPE } from './LanguageNode';
-import { SolidityData } from '../sol_parsing/parse_solidity';
-import { VarType } from '../sol_parsing/vartype';
-import { Z3SolidityGenerators } from "../translate/solidityZ3Generator";
+import { Z3SolidityGenerators } from '../translate/solidityZ3Generator';
+import { ParsedSolidityData, VarType } from '../sol_parsing/sol_parsing_types';
 
 const precedenceOf: Map<OPERATION_TYPE, number> = new Map<OPERATION_TYPE, number>([
   [OPERATION_TYPE.ARRAY_ACCESS, 0],

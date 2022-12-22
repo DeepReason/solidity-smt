@@ -1,19 +1,7 @@
 import assert from 'assert';
 import { ArrayTypeName, ElementaryTypeName, Mapping, TypeName, UserDefinedTypeName } from 'solc-typed-ast';
 import { elementaryTypeNameToByte } from './var_parsing';
-
-export enum VarTypeKind {
-  Mapping,
-  ArrayTypeName,
-  ElementaryTypeName,
-  UserDefinedTypeName,
-}
-
-export type ElementaryVarType = {
-  type: VarTypeKind.ElementaryTypeName;
-  name: string;
-  stateMutability: string | null;
-};
+import { ElementaryVarType, UserDefinedVarType, VarType, VarTypeKind } from './sol_parsing_types';
 
 export function makeElementaryVarType(name: string): ElementaryVarType {
   return {
@@ -22,25 +10,6 @@ export function makeElementaryVarType(name: string): ElementaryVarType {
     stateMutability: null,
   };
 }
-
-export type UserDefinedVarType = {
-  type: VarTypeKind.UserDefinedTypeName;
-  name: string;
-};
-
-export type ArrayVarType = {
-  type: VarTypeKind.ArrayTypeName;
-  baseType: VarType;
-  length: any;
-};
-
-export type MappingVarType = {
-  type: VarTypeKind.Mapping;
-  keyType: ElementaryVarType | UserDefinedVarType;
-  valueType: VarType;
-};
-
-export type VarType = ElementaryVarType | MappingVarType | ArrayVarType | UserDefinedVarType;
 
 export function varTypeToString(varType: VarType): string {
   switch (varType.type) {

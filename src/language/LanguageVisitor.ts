@@ -1,5 +1,5 @@
 import { Token } from 'antlr4ts';
-import { AbstractParseTreeVisitor } from 'antlr4ts/tree/AbstractParseTreeVisitor.js';
+import { AbstractParseTreeVisitor } from 'antlr4ts/tree/AbstractParseTreeVisitor';
 import {
   AdditiveContext,
   ArrayAccessContext,

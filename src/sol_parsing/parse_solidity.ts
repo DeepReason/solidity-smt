@@ -4,72 +4,12 @@ import {
   ASTReader,
   ContractDefinition,
   EnumDefinition,
-  Mutability,
   SourceUnit,
   StructDefinition,
   VariableDeclaration,
 } from 'solc-typed-ast';
-import { typeNameToVarType, VarType } from './vartype';
-
-export type SlotInfo = {
-  slot: [number, number];
-  intraSlot: [number, number] | undefined;
-};
-
-export type ContractVarData = {
-  name: string;
-  typeString: string;
-  type: VarType;
-  bytes: number;
-  id: number;
-  slot: SlotInfo;
-  mutability: Mutability;
-};
-
-export type StructVarData = {
-  name: string;
-  typeString: string;
-  type: VarType;
-  bytes: number;
-  slot: SlotInfo;
-  id: number;
-};
-
-export type ContractTypeObject = {
-  id: number;
-  type: 'Contract';
-  sourceUnit: string;
-  name: string;
-  subtypes: {
-    [typeName: string]: number;
-  };
-  vars: {
-    [varName: string]: ContractVarData;
-  };
-};
-
-export type StructTypeObject = {
-  id: number;
-  type: 'Struct';
-  name: string;
-  subtypes: {
-    [typeName: string]: number;
-  };
-  vars: {
-    [varName: string]: StructVarData;
-  };
-};
-
-export type EnumTypeObject = {
-  id: number;
-  type: 'Enum';
-  name: string;
-  values: {
-    [valueName: string]: number;
-  };
-};
-
-export type TypeObject = ContractTypeObject | StructTypeObject | EnumTypeObject;
+import { typeNameToVarType } from './vartype';
+import { ContractVarData, ParsedSolidityData, SlotInfo, StructVarData } from './sol_parsing_types';
 
 class SlotCalculator {
   private slot: number = 0;
@@ -153,7 +93,6 @@ function getContractVarData(astContract: ContractDefinition): {
   return stateVars;
 }
 
-
 function getStructVarData(astStruct: StructDefinition): {
   [varName: string]: StructVarData;
 } {
@@ -182,26 +121,8 @@ function getStructVarData(astStruct: StructDefinition): {
 
   return structVars;
 }
-
-export type SolidityData = {
-  contractId: {
-    [contractName: string]: number;
-  }
-  sourceUnits: {
-    [absolutePath: string]: {
-      contracts: number[];
-      types: {
-        [typeName: string]: number;
-      };
-    };
-  };
-  typeObjects: {
-    [typeId: number]: TypeObject;
-  };
-};
-
-function getSolidityDataFromSourceUnits(solcOutputSources: SourceUnit[]): SolidityData {
-  const solidityData: SolidityData = {
+function getSolidityDataFromSourceUnits(solcOutputSources: SourceUnit[]): ParsedSolidityData {
+  const solidityData: ParsedSolidityData = {
     contractId: {},
     sourceUnits: {},
     typeObjects: {},
@@ -296,7 +217,7 @@ function getSolidityDataFromSourceUnits(solcOutputSources: SourceUnit[]): Solidi
   return solidityData;
 }
 
-function getSolidityData(solcOutput: any): SolidityData {
+function getSolidityData(solcOutput: any): ParsedSolidityData {
   const reader = new ASTReader();
   const sourceUnits = reader.read(solcOutput);
   return getSolidityDataFromSourceUnits(sourceUnits);

@@ -40,7 +40,6 @@ class ExpressionsErrorListener implements ANTLRErrorListener<any> {
     message: string,
     e: RecognitionException | undefined,
   ): void {
-    console.log('message>>', message);
     this.errors.push({
       startLineNumber: line,
       endLineNumber: line,
