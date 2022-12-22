@@ -1,24 +1,16 @@
 import assert from 'assert';
 import { ArrayTypeName, ElementaryTypeName, Mapping, TypeName, UserDefinedTypeName } from 'solc-typed-ast';
 import { elementaryTypeNameToByte } from './var_parsing';
-import { ElementaryVarType, UserDefinedVarType, VarType, VarTypeKind } from './sol_parsing_types';
+import { ElementaryVarType, UserDefinedVarType, SolidityVarType, VarTypeKind } from './sol_parsing_types';
 
-export function makeElementaryVarType(name: string): ElementaryVarType {
-  return {
-    type: VarTypeKind.ElementaryTypeName,
-    name,
-    stateMutability: null,
-  };
-}
-
-export function varTypeToString(varType: VarType): string {
+export function solidityTypeToString(varType: SolidityVarType): string {
   switch (varType.type) {
     case VarTypeKind.ElementaryTypeName:
       return varType.name;
     case VarTypeKind.Mapping:
-      return `mapping(${varTypeToString(varType.keyType)} => ${varTypeToString(varType.valueType)})`;
+      return `mapping(${solidityTypeToString(varType.keyType)} => ${solidityTypeToString(varType.valueType)})`;
     case VarTypeKind.ArrayTypeName:
-      return `${varTypeToString(varType.baseType)}[]`;
+      return `${solidityTypeToString(varType.baseType)}[]`;
     case VarTypeKind.UserDefinedTypeName:
       return varType.name;
     default:
@@ -26,7 +18,15 @@ export function varTypeToString(varType: VarType): string {
   }
 }
 
-export function isSameType(varType1: VarType, varType2: VarType): boolean {
+export function makeElementarySolidityType(name: string): ElementaryVarType {
+  return {
+    type: VarTypeKind.ElementaryTypeName,
+    name,
+    stateMutability: null,
+  };
+}
+
+export function isSameSolidityType(varType1: SolidityVarType, varType2: SolidityVarType): boolean {
   if (varType1.type !== varType2.type) {
     return false;
   }
@@ -43,10 +43,13 @@ export function isSameType(varType1: VarType, varType2: VarType): boolean {
       return name1 === name2;
     case VarTypeKind.Mapping:
       assert(varType2.type === VarTypeKind.Mapping);
-      return isSameType(varType1.keyType, varType2.keyType) && isSameType(varType1.valueType, varType2.valueType);
+      return (
+        isSameSolidityType(varType1.keyType, varType2.keyType) &&
+        isSameSolidityType(varType1.valueType, varType2.valueType)
+      );
     case VarTypeKind.ArrayTypeName:
       assert(varType2.type === VarTypeKind.ArrayTypeName);
-      return isSameType(varType1.baseType, varType2.baseType);
+      return isSameSolidityType(varType1.baseType, varType2.baseType);
     case VarTypeKind.UserDefinedTypeName:
       assert(varType2.type === VarTypeKind.UserDefinedTypeName);
       return varType1.name === varType2.name;
@@ -55,20 +58,20 @@ export function isSameType(varType1: VarType, varType2: VarType): boolean {
   }
 }
 
-export function typeNameToVarType(typeName: TypeName): VarType {
+export function typeNameToSolidityType(typeName: TypeName): SolidityVarType {
   if (typeName.type === 'Mapping') {
     const mappingTypeNames = typeName as Mapping;
     return {
       type: VarTypeKind.Mapping,
-      keyType: typeNameToVarType(mappingTypeNames.vKeyType) as ElementaryVarType | UserDefinedVarType,
-      valueType: typeNameToVarType(mappingTypeNames.vValueType),
+      keyType: typeNameToSolidityType(mappingTypeNames.vKeyType) as ElementaryVarType,
+      valueType: typeNameToSolidityType(mappingTypeNames.vValueType),
     };
   }
   if (typeName.type === 'ArrayTypeName') {
     const arrayTypeName = typeName as ArrayTypeName;
     return {
       type: VarTypeKind.ArrayTypeName,
-      baseType: typeNameToVarType(arrayTypeName.vBaseType),
+      baseType: typeNameToSolidityType(arrayTypeName.vBaseType),
       length: arrayTypeName.vLength,
     };
   }

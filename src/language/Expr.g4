@@ -48,7 +48,7 @@ expr
 		)
 	) right = expr # Shift
 	| left = expr operation = INEQ right = expr # CompareIneq
-	| left = expr operation = EQ_DISTINCT right = expr # CompareEqDistinct
+	| left = expr operation = DATA_COMPARISON right = expr # DataComparison
 	| left = expr '&' right = expr # BitwiseAnd
 	| left = expr '^' right = expr # BitwiseXor
 	| left = expr '|' right = expr # BitwiseOr
@@ -58,7 +58,6 @@ expr
 	| '(' val=expr ')' # Parens
 	| value = ID # Identifier
 	| value = INT # Int
-	| value = DOUBLE # Double
 	| value = BOOLEAN # Boolean
 ;
 
@@ -91,7 +90,7 @@ INEQ
 	| '<='
 ;
 
-EQ_DISTINCT: '==' | '!=';
+DATA_COMPARISON: '==' | '!=';
 
 ID
 :
@@ -102,14 +101,6 @@ INT
 :
 		([1-9] (DIGIT*))
 		| '0'
-;
-
-DOUBLE
-:
-	INT
-	(
-		'.' DIGIT+
-	)?
 ;
 
 fragment DIGIT

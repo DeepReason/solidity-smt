@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { Command } from 'commander';
 import { getSolidityData } from './src/sol_parsing';
-import { translateFromParsedSolidity } from './src/translate';
+import { translateToZ3 } from './src/translate';
 import { dumps_expr } from './src/z3';
 
 const program = new Command();
@@ -32,8 +32,9 @@ async function translate(options: any) {
   try {
     const contract = options.contract;
     const input = options.input;
-    const parsed_solidity = JSON.parse(options.parsedSolidity);
-    const result = await translateFromParsedSolidity(input, contract, parsed_solidity);
+    const parsedSolidity = JSON.parse(options.parsedSolidity);
+    const exposedImmutablesJSON = JSON.parse(options.exposedImmutables);
+    const result = await translateToZ3(input, contract, parsedSolidity, exposedImmutablesJSON);
     if (result.error === undefined) {
       result.expr = dumps_expr(result.expr);
       console.log(JSON.stringify(result));
@@ -61,6 +62,10 @@ program
   .option(
     '-s, --parsed-solidity <parsed_solidity>',
     'Parsed SOLC Output (Generate using the `solidity-smt parse` command)',
+  )
+  .option(
+    '-e, --exposed-immutables <exposed_immutables>',
+    'Exposed Immutables (Generated from the DeepReason analysis)',
   )
   .description('Translate Solidity SMT')
   .action(translate);

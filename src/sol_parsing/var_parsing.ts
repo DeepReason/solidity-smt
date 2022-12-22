@@ -15,7 +15,7 @@ export function typeNameToString(typeName: TypeName): string {
 
 export type UserTypeDefinition = StructDefinition | EnumDefinition;
 
-function userTypeDefinitionToBytes(def: UserTypeDefinition): number {
+export function userTypeDefinitionToBytes(def: UserTypeDefinition): number {
   if (def.type === 'EnumDefinition') {
     const enumDefinition = def as EnumDefinition;
     const target = enumDefinition.vMembers.length;
@@ -45,7 +45,7 @@ function userTypeDefinitionToBytes(def: UserTypeDefinition): number {
 }
 
 export function stateVarDeclToBytes(varDecl: VariableDeclaration): number {
-  if (varDecl.mutability === Mutability.Immutable) {
+  if (varDecl.mutability !== Mutability.Mutable) {
     return 0;
   }
   return varDeclToBytes(varDecl);

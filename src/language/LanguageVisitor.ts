@@ -8,10 +8,9 @@ import {
   BitwiseXorContext,
   BooleanContext,
   CastContext,
-  CompareEqDistinctContext,
   CompareIneqContext,
+  DataComparisonContext,
   DotExpressionContext,
-  DoubleContext,
   ExponentialContext,
   ExprContext,
   FunctionCallContext,
@@ -37,7 +36,7 @@ import {
   MultiOperationNode,
   NodeType,
   NotImplementedNode,
-  OPERATION_TYPE,
+  OperationType,
   PredicateNode,
   QuantifierNode,
   QuantifierType,
@@ -56,31 +55,33 @@ export class LanguageVisitor extends AbstractParseTreeVisitor<LanguageNode> impl
   private makeUnaryOperation(ctx: ExprContext, child: ExprContext, operationStr: string) {
     let childExpr = this.visit(child);
 
-    let values: Array<OPERATION_TYPE> = Object.values(OPERATION_TYPE).filter(x => '' + x == operationStr);
+    let values: Array<OperationType> = Object.values(OperationType).filter(x => '' + x == operationStr);
 
     return new UnaryOperationNode(ctx, childExpr, values[0]);
   }
 
-  private makeBinaryOperation(ctx: ExprContext, l: ExprContext, r: ExprContext, operationStr: string) {
+  private makeBinaryOperation(
+    ctx: ExprContext,
+    l: ExprContext,
+    r: ExprContext,
+    operationStr: string,
+    nt: NodeType.BINARY | NodeType.DATA_COMPARISON = NodeType.BINARY,
+  ) {
     let left = this.visit(l);
     let right = this.visit(r);
 
-    let values: Array<OPERATION_TYPE> = Object.values(OPERATION_TYPE).filter(x => '' + x == operationStr);
+    let values: Array<OperationType> = Object.values(OperationType).filter(x => '' + x == operationStr);
 
-    return new BinaryOperationNode(ctx, left, right, values[0]);
+    return new BinaryOperationNode(ctx, left, right, values[0], nt);
   }
 
-  private makeMultiOperation(ctx: ExprContext, opContexts: Array<ExprContext>, opType: OPERATION_TYPE) {
+  private makeMultiOperation(ctx: ExprContext, opContexts: Array<ExprContext>, opType: OperationType) {
     let children: Array<LanguageNode> = opContexts.map(cont => this.visit(cont));
     return new MultiOperationNode(ctx, opType, children);
   }
 
   visitInt(ctx: IntContext) {
     return new PredicateNode(ctx, NodeType.INTEGER, BigInt(ctx._value.text as string));
-  }
-
-  visitDouble(ctx: DoubleContext) {
-    return new PredicateNode(ctx, NodeType.DOUBLE, parseFloat(ctx._value.text as string));
   }
 
   visitBoolean(ctx: BooleanContext) {
@@ -95,8 +96,14 @@ export class LanguageVisitor extends AbstractParseTreeVisitor<LanguageNode> impl
     return this.makeBinaryOperation(ctx, ctx._left, ctx._right, ctx._operation.text as string);
   }
 
-  visitCompareEqDistinct(ctx: CompareEqDistinctContext) {
-    return this.makeBinaryOperation(ctx, ctx._left, ctx._right, ctx._operation.text as string);
+  visitDataComparison(ctx: DataComparisonContext) {
+    return this.makeBinaryOperation(
+      ctx,
+      ctx._left,
+      ctx._right,
+      ctx._operation.text as string,
+      NodeType.DATA_COMPARISON,
+    );
   }
 
   visitMultiplicative(ctx: MultiplicativeContext) {
@@ -104,7 +111,7 @@ export class LanguageVisitor extends AbstractParseTreeVisitor<LanguageNode> impl
   }
 
   visitExponential(ctx: ExponentialContext) {
-    return this.makeBinaryOperation(ctx, ctx._left, ctx._right, OPERATION_TYPE.EXP as string);
+    return this.makeBinaryOperation(ctx, ctx._left, ctx._right, OperationType.EXP as string);
   }
 
   visitAdditive(ctx: AdditiveContext) {
@@ -116,35 +123,35 @@ export class LanguageVisitor extends AbstractParseTreeVisitor<LanguageNode> impl
   }
 
   visitBitwiseAnd(ctx: BitwiseAndContext) {
-    return this.makeBinaryOperation(ctx, ctx._left, ctx._right, OPERATION_TYPE.BIT_AND);
+    return this.makeBinaryOperation(ctx, ctx._left, ctx._right, OperationType.BIT_AND);
   }
 
   visitBitwiseXor(ctx: BitwiseXorContext) {
-    return this.makeBinaryOperation(ctx, ctx._left, ctx._right, OPERATION_TYPE.BIT_XOR);
+    return this.makeBinaryOperation(ctx, ctx._left, ctx._right, OperationType.BIT_XOR);
   }
 
   visitBitwiseOr(ctx: BitwiseOrContext) {
-    return this.makeBinaryOperation(ctx, ctx._left, ctx._right, OPERATION_TYPE.BIT_OR);
+    return this.makeBinaryOperation(ctx, ctx._left, ctx._right, OperationType.BIT_OR);
   }
 
   visitLogicalAnd(ctx: LogicalAndContext) {
-    return this.makeBinaryOperation(ctx, ctx._left, ctx._right, OPERATION_TYPE.AND);
+    return this.makeBinaryOperation(ctx, ctx._left, ctx._right, OperationType.AND);
   }
 
   visitLogicalOr(ctx: LogicalOrContext) {
-    return this.makeBinaryOperation(ctx, ctx._left, ctx._right, OPERATION_TYPE.OR);
+    return this.makeBinaryOperation(ctx, ctx._left, ctx._right, OperationType.OR);
   }
 
   visitTernary(ctx: TernaryContext) {
-    return this.makeMultiOperation(ctx, ctx.expr(), OPERATION_TYPE.TERNARY);
+    return this.makeMultiOperation(ctx, ctx.expr(), OperationType.TERNARY);
   }
 
   visitArrayAccess(ctx: ArrayAccessContext) {
-    return this.makeMultiOperation(ctx, ctx.expr(), OPERATION_TYPE.ARRAY_ACCESS);
+    return this.makeMultiOperation(ctx, ctx.expr(), OperationType.ARRAY_ACCESS);
   }
 
   visitFunctionCall(ctx: FunctionCallContext) {
-    return this.makeMultiOperation(ctx, ctx.expr(), OPERATION_TYPE.FUNCTION);
+    return this.makeMultiOperation(ctx, ctx.expr(), OperationType.FUNCTION);
   }
 
   visitDotExpression(ctx: DotExpressionContext) {
@@ -160,7 +167,7 @@ export class LanguageVisitor extends AbstractParseTreeVisitor<LanguageNode> impl
   }
 
   visitParens(ctx: ParensContext) {
-    return this.makeUnaryOperation(ctx, ctx._val, OPERATION_TYPE.PARENTHESES);
+    return this.makeUnaryOperation(ctx, ctx._val, OperationType.PARENTHESES);
   }
 
   visitCast(ctx: CastContext) {

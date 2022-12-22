@@ -1,2 +1,2 @@
 export * from './solidityZ3Generator';
-export * from './toZ3';
+export * from './translateToZ3';

@@ -1,4 +1,4 @@
-import { stateVarDeclToBytes, typeNameToString } from './var_parsing';
+import { stateVarDeclToBytes, typeNameToString, userTypeDefinitionToBytes } from './var_parsing';
 import {
   ASTNode,
   ASTReader,
@@ -8,8 +8,8 @@ import {
   StructDefinition,
   VariableDeclaration,
 } from 'solc-typed-ast';
-import { typeNameToVarType } from './vartype';
-import { ContractVarData, ParsedSolidityData, SlotInfo, StructVarData } from './sol_parsing_types';
+import { typeNameToSolidityType } from './vartype';
+import { ContractVarData, ParsedSolidityData, SlotInfo, StructVarData, UserDefinedTypeKind } from './sol_parsing_types';
 
 class SlotCalculator {
   private slot: number = 0;
@@ -80,7 +80,7 @@ function getContractVarData(astContract: ContractDefinition): {
     stateVars[varD.name] = {
       name: varD.name,
       typeString: typeNameToString(varD.vType!),
-      type: typeNameToVarType(varD.vType!),
+      type: typeNameToSolidityType(varD.vType!),
       bytes: 0,
       slot: slotInfo,
       id: varD.id,
@@ -110,7 +110,7 @@ function getStructVarData(astStruct: StructDefinition): {
     structVars[varD.name] = {
       name: varD.name,
       typeString: typeNameToString(varD.vType!),
-      type: typeNameToVarType(varD.vType!),
+      type: typeNameToSolidityType(varD.vType!),
       bytes: 0,
       slot: slotInfo,
       id: varD.id,
@@ -132,7 +132,7 @@ function getSolidityDataFromSourceUnits(solcOutputSources: SourceUnit[]): Parsed
     for (const contractDefinition of sourceUnit.vContracts) {
       const contractName = contractDefinition.name!;
       solidityData.typeObjects[contractDefinition.id] = {
-        type: 'Contract',
+        type: UserDefinedTypeKind.CONTRACT,
         sourceUnit: sourceUnit.absolutePath,
         name: contractName,
         id: contractDefinition.id,
@@ -189,9 +189,10 @@ function getSolidityDataFromSourceUnits(solcOutputSources: SourceUnit[]): Parsed
       if (node.type === 'StructDefinition') {
         const structDefinition = node as StructDefinition;
         solidityData.typeObjects[structDefinition.id] = {
-          type: 'Struct',
+          type: UserDefinedTypeKind.STRUCT,
           name: structDefinition.name!,
           id: structDefinition.id,
+          bytes: userTypeDefinitionToBytes(structDefinition),
           subtypes: getSubTypes(node),
           vars: getStructVarData(structDefinition),
         };
@@ -205,9 +206,10 @@ function getSolidityDataFromSourceUnits(solcOutputSources: SourceUnit[]): Parsed
           values[member.name!] = i;
         });
         solidityData.typeObjects[enumDefinition.id] = {
-          type: 'Enum',
+          type: UserDefinedTypeKind.ENUM,
           name: enumDefinition.name!,
           id: enumDefinition.id,
+          bytes: userTypeDefinitionToBytes(enumDefinition),
           values,
         };
       }

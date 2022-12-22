@@ -1,39 +1,39 @@
 import { Expr } from 'z3-solver';
-import { OPERATION_TYPE } from './LanguageNode';
+import { OperationType } from './LanguageNode';
 import { Z3SolidityGenerators } from '../translate/solidityZ3Generator';
-import { ParsedSolidityData, VarType } from '../sol_parsing/sol_parsing_types';
+import { ParsedSolidityData, SolidityVarType } from '../sol_parsing/sol_parsing_types';
 
-const precedenceOf: Map<OPERATION_TYPE, number> = new Map<OPERATION_TYPE, number>([
-  [OPERATION_TYPE.ARRAY_ACCESS, 0],
-  [OPERATION_TYPE.NOT, 1],
-  [OPERATION_TYPE.BIT_NOT, 1],
-  [OPERATION_TYPE.EXP, 2],
-  [OPERATION_TYPE.MUL, 3],
-  [OPERATION_TYPE.DIV, 3],
-  [OPERATION_TYPE.MOD, 3],
-  [OPERATION_TYPE.ADD, 4],
-  [OPERATION_TYPE.SUBTRACT, 4],
-  [OPERATION_TYPE.SHIFT_LEFT, 5],
-  [OPERATION_TYPE.SHIFT_RIGHT, 5],
-  [OPERATION_TYPE.LT, 6],
-  [OPERATION_TYPE.GT, 6],
-  [OPERATION_TYPE.LE, 6],
-  [OPERATION_TYPE.GE, 6],
-  [OPERATION_TYPE.EQUAL, 7],
-  [OPERATION_TYPE.NOT_EQUAL, 7],
-  [OPERATION_TYPE.BIT_AND, 8],
-  [OPERATION_TYPE.BIT_XOR, 9],
-  [OPERATION_TYPE.BIT_OR, 10],
-  [OPERATION_TYPE.AND, 11],
-  [OPERATION_TYPE.OR, 12],
-  [OPERATION_TYPE.TERNARY, 13],
+const precedenceOf: Map<OperationType, number> = new Map<OperationType, number>([
+  [OperationType.ARRAY_ACCESS, 0],
+  [OperationType.NOT, 1],
+  [OperationType.BIT_NOT, 1],
+  [OperationType.EXP, 2],
+  [OperationType.MUL, 3],
+  [OperationType.DIV, 3],
+  [OperationType.MOD, 3],
+  [OperationType.ADD, 4],
+  [OperationType.SUBTRACT, 4],
+  [OperationType.SHIFT_LEFT, 5],
+  [OperationType.SHIFT_RIGHT, 5],
+  [OperationType.LT, 6],
+  [OperationType.GT, 6],
+  [OperationType.LE, 6],
+  [OperationType.GE, 6],
+  [OperationType.EQUAL, 7],
+  [OperationType.NOT_EQUAL, 7],
+  [OperationType.BIT_AND, 8],
+  [OperationType.BIT_XOR, 9],
+  [OperationType.BIT_OR, 10],
+  [OperationType.AND, 11],
+  [OperationType.OR, 12],
+  [OperationType.TERNARY, 13],
 ]);
 
 type TranslationResult = {
   text: string;
-  lowestPrecedenceOperator: OPERATION_TYPE;
+  lowestPrecedenceOperator: OperationType;
   temporal_tag: string;
-  type: VarType;
+  type: SolidityVarType;
 };
 
 export function Z3ToText(expr: Expr, solidityData: Z3SolidityGenerators): string {

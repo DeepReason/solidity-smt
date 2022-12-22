@@ -6,7 +6,7 @@ import {
   LanguageNode,
   MultiOperationNode,
   NodeType,
-  OPERATION_TYPE,
+  OperationType,
   PredicateNode,
   QuantifierNode,
   QuantifierType,
@@ -40,7 +40,7 @@ describe('Test parsing text expressions', () => {
   });
 
   describe('Test binary operations', () => {
-    async function testBinOp(op: string, expected: OPERATION_TYPE) {
+    async function testBinOp(op: string, expected: OperationType) {
       let val: ExprResult = parseExpression(`a ${op} b`);
 
       expect(val.hasError).toEqual(false);
@@ -50,16 +50,16 @@ describe('Test parsing text expressions', () => {
       expect(binary.binaryOperationType).toEqual(expected);
     }
 
-    it('Test AND', async () => await testBinOp(`&&`, OPERATION_TYPE.AND));
-    it('Test OR', async () => await testBinOp(`||`, OPERATION_TYPE.OR));
-    it('Test add', async () => await testBinOp(`+`, OPERATION_TYPE.ADD));
-    it('Test sub', async () => await testBinOp(`-`, OPERATION_TYPE.SUBTRACT));
-    it('Test mul', async () => await testBinOp(`*`, OPERATION_TYPE.MUL));
-    it('Test div', async () => await testBinOp(`/`, OPERATION_TYPE.DIV));
+    it('Test AND', async () => await testBinOp(`&&`, OperationType.AND));
+    it('Test OR', async () => await testBinOp(`||`, OperationType.OR));
+    it('Test add', async () => await testBinOp(`+`, OperationType.ADD));
+    it('Test sub', async () => await testBinOp(`-`, OperationType.SUBTRACT));
+    it('Test mul', async () => await testBinOp(`*`, OperationType.MUL));
+    it('Test div', async () => await testBinOp(`/`, OperationType.DIV));
 
-    it('Test Bitwise AND', async () => await testBinOp(`&`, OPERATION_TYPE.BIT_AND));
-    it('Test Bitwise OR', async () => await testBinOp(`|`, OPERATION_TYPE.BIT_OR));
-    it('Test Bitwise XOR', async () => await testBinOp(`^`, OPERATION_TYPE.BIT_XOR));
+    it('Test Bitwise AND', async () => await testBinOp(`&`, OperationType.BIT_AND));
+    it('Test Bitwise OR', async () => await testBinOp(`|`, OperationType.BIT_OR));
+    it('Test Bitwise XOR', async () => await testBinOp(`^`, OperationType.BIT_XOR));
   });
 
   it('Test add of mul', async () => {
@@ -69,7 +69,7 @@ describe('Test parsing text expressions', () => {
     let node: LanguageNode = val.value as LanguageNode;
     expect(node.nodeType).toEqual(NodeType.BINARY);
     let binary = node as BinaryOperationNode;
-    expect(binary.binaryOperationType).toEqual(OPERATION_TYPE.ADD);
+    expect(binary.binaryOperationType).toEqual(OperationType.ADD);
   });
 
   it('Test compare of mul', async () => {
@@ -79,7 +79,17 @@ describe('Test parsing text expressions', () => {
     let node: LanguageNode = val.value as LanguageNode;
     expect(node.nodeType).toEqual(NodeType.BINARY);
     let binary = node as BinaryOperationNode;
-    expect(binary.binaryOperationType).toEqual(OPERATION_TYPE.LT);
+    expect(binary.binaryOperationType).toEqual(OperationType.LT);
+  });
+
+  it('Test data comparison', async () => {
+    let val: ExprResult = parseExpression(`1 * 2 == 3*4`);
+
+    expect(val.hasError).toEqual(false);
+    let node: LanguageNode = val.value as LanguageNode;
+    expect(node.nodeType).toEqual(NodeType.DATA_COMPARISON);
+    let binary = node as BinaryOperationNode;
+    expect(binary.binaryOperationType).toEqual(OperationType.EQUAL);
   });
 
   it('Test compare of exp', async () => {
@@ -89,7 +99,7 @@ describe('Test parsing text expressions', () => {
     let node: LanguageNode = val.value as LanguageNode;
     expect(node.nodeType).toEqual(NodeType.BINARY);
     let binary = node as BinaryOperationNode;
-    expect(binary.binaryOperationType).toEqual(OPERATION_TYPE.LT);
+    expect(binary.binaryOperationType).toEqual(OperationType.LT);
 
     const left = binary.left;
     expect(left.nodeType).toEqual(NodeType.BINARY);
@@ -104,7 +114,7 @@ describe('Test parsing text expressions', () => {
     let node: LanguageNode = val.value as LanguageNode;
     expect(node.nodeType).toEqual(NodeType.BINARY);
     let binary = node as BinaryOperationNode;
-    expect(binary.binaryOperationType).toEqual(OPERATION_TYPE.BIT_XOR);
+    expect(binary.binaryOperationType).toEqual(OperationType.BIT_XOR);
   });
 
   it('Test ternary', async () => {
@@ -114,7 +124,7 @@ describe('Test parsing text expressions', () => {
     let node: LanguageNode = val.value as LanguageNode;
     expect(node.nodeType).toEqual(NodeType.MULTI);
     let binary: MultiOperationNode = node as MultiOperationNode;
-    expect(binary.operationType).toEqual(OPERATION_TYPE.TERNARY);
+    expect(binary.operationType).toEqual(OperationType.TERNARY);
     expect(binary.childValues.map(v => v.nodeType)).toEqual([NodeType.BOOLEAN, NodeType.INTEGER, NodeType.INTEGER]);
   });
 
@@ -125,7 +135,7 @@ describe('Test parsing text expressions', () => {
     let node: LanguageNode = val.value as LanguageNode;
     expect(node.nodeType).toEqual(NodeType.MULTI);
     let binary: MultiOperationNode = node as MultiOperationNode;
-    expect(binary.operationType).toEqual(OPERATION_TYPE.ARRAY_ACCESS);
+    expect(binary.operationType).toEqual(OperationType.ARRAY_ACCESS);
 
     expect(binary.childValues.map(v => v.nodeType)).toEqual([NodeType.IDENTIFIER, NodeType.BINARY]);
   });
@@ -137,7 +147,7 @@ describe('Test parsing text expressions', () => {
     let node: LanguageNode = val.value as LanguageNode;
     expect(node.nodeType).toEqual(NodeType.MULTI);
     let binary: MultiOperationNode = node as MultiOperationNode;
-    expect(binary.operationType).toEqual(OPERATION_TYPE.FUNCTION);
+    expect(binary.operationType).toEqual(OperationType.FUNCTION);
 
     expect(binary.childValues.map(v => v.nodeType)).toEqual([
       NodeType.IDENTIFIER,
@@ -170,7 +180,7 @@ describe('Test parsing text expressions', () => {
     let node: LanguageNode = val.value as LanguageNode;
     expect(node.nodeType).toEqual(NodeType.UNARY);
     let binary: MultiOperationNode = node as MultiOperationNode;
-    expect(binary.operationType).toEqual(OPERATION_TYPE.NOT);
+    expect(binary.operationType).toEqual(OperationType.NOT);
   });
 
   it('Tilda test', async () => {
@@ -180,7 +190,7 @@ describe('Test parsing text expressions', () => {
     let node: LanguageNode = val.value as LanguageNode;
     expect(node.nodeType).toEqual(NodeType.UNARY);
     let binary: MultiOperationNode = node as MultiOperationNode;
-    expect(binary.operationType).toEqual(OPERATION_TYPE.BIT_NOT);
+    expect(binary.operationType).toEqual(OperationType.BIT_NOT);
   });
 
   it('Test @before', async () => {
@@ -190,7 +200,7 @@ describe('Test parsing text expressions', () => {
     let node: LanguageNode = val.value as LanguageNode;
     expect(node.nodeType).toEqual(NodeType.UNARY);
     let binary: MultiOperationNode = node as MultiOperationNode;
-    expect(binary.operationType).toEqual(OPERATION_TYPE.BEFORE);
+    expect(binary.operationType).toEqual(OperationType.BEFORE);
   });
 
   it('Test @after', async () => {
@@ -200,7 +210,7 @@ describe('Test parsing text expressions', () => {
     let node: LanguageNode = val.value as LanguageNode;
     expect(node.nodeType).toEqual(NodeType.UNARY);
     let binary: MultiOperationNode = node as MultiOperationNode;
-    expect(binary.operationType).toEqual(OPERATION_TYPE.AFTER);
+    expect(binary.operationType).toEqual(OperationType.AFTER);
   });
 
   it('Test @init', async () => {
@@ -210,7 +220,7 @@ describe('Test parsing text expressions', () => {
     let node: LanguageNode = val.value as LanguageNode;
     expect(node.nodeType).toEqual(NodeType.UNARY);
     let binary: MultiOperationNode = node as MultiOperationNode;
-    expect(binary.operationType).toEqual(OPERATION_TYPE.INIT);
+    expect(binary.operationType).toEqual(OperationType.INIT);
   });
 
   it('Test parentheses', async () => {
@@ -220,7 +230,7 @@ describe('Test parsing text expressions', () => {
     let node: LanguageNode = val.value as LanguageNode;
     expect(node.nodeType).toEqual(NodeType.UNARY);
     let binary: MultiOperationNode = node as MultiOperationNode;
-    expect(binary.operationType).toEqual(OPERATION_TYPE.PARENTHESES);
+    expect(binary.operationType).toEqual(OperationType.PARENTHESES);
   });
 
   it('Test quantifier', async () => {
@@ -235,7 +245,7 @@ describe('Test parsing text expressions', () => {
     expect(quantifier.decls.length).toEqual(1);
     expect(quantifier.decls[0]).toEqual('address addr');
 
-    expect(quantifier.body.nodeType).toEqual(NodeType.BINARY);
+    expect(quantifier.body.nodeType).toEqual(NodeType.DATA_COMPARISON);
   });
 
   it('Test cast', async () => {

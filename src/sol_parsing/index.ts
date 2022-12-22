@@ -9,7 +9,7 @@ export { ContractTypeObject } from './sol_parsing_types';
 export { StructVarData } from './sol_parsing_types';
 export { ContractVarData } from './sol_parsing_types';
 export { SlotInfo } from './sol_parsing_types';
-export { VarType } from './sol_parsing_types';
+export { SolidityVarType } from './sol_parsing_types';
 export { MappingVarType } from './sol_parsing_types';
 export { ArrayVarType } from './sol_parsing_types';
 export { UserDefinedVarType } from './sol_parsing_types';

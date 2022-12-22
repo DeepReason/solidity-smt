@@ -1,7 +1,7 @@
 import { ParserRuleContext } from 'antlr4ts';
 import { TerminalNode } from 'antlr4ts/tree';
 
-export enum OPERATION_TYPE {
+export enum OperationType {
   ADD = '+',
   SUBTRACT = '-',
   MUL = '*',
@@ -46,6 +46,8 @@ export enum NodeType {
   DOT_ACCESS = 'dot_access',
   CAST = 'cast',
   QUANTIFIER = 'quantifier',
+
+  DATA_COMPARISON = 'data_comparison',
 
   NOT_IMPLEMENTED = 'not_implemented',
 }
@@ -100,13 +102,13 @@ export class PredicateNode extends LanguageNode {
 
 export class UnaryOperationNode extends LanguageNode {
   private _child: LanguageNode;
-  private _operationType: OPERATION_TYPE;
+  private _operationType: OperationType;
 
-  public get operationType(): OPERATION_TYPE {
+  public get operationType(): OperationType {
     return this._operationType;
   }
 
-  constructor(ctx: ParserRuleContext | null, child: LanguageNode, op: OPERATION_TYPE) {
+  constructor(ctx: ParserRuleContext | null, child: LanguageNode, op: OperationType) {
     super(ctx, NodeType.UNARY);
 
     this._child = child;
@@ -122,17 +124,23 @@ export class BinaryOperationNode extends LanguageNode {
   private readonly _left: LanguageNode;
   private readonly _right: LanguageNode;
 
-  private _binaryOperationType: OPERATION_TYPE;
-  public set binaryOperationType(value: OPERATION_TYPE) {
+  private _binaryOperationType: OperationType;
+  public set binaryOperationType(value: OperationType) {
     this._binaryOperationType = value;
   }
 
-  public get binaryOperationType(): OPERATION_TYPE {
+  public get binaryOperationType(): OperationType {
     return this._binaryOperationType;
   }
 
-  constructor(ctx: ParserRuleContext | null, l: LanguageNode, r: LanguageNode, ot: OPERATION_TYPE) {
-    super(ctx, NodeType.BINARY);
+  constructor(
+    ctx: ParserRuleContext | null,
+    l: LanguageNode,
+    r: LanguageNode,
+    ot: OperationType,
+    nt: NodeType.BINARY | NodeType.DATA_COMPARISON = NodeType.BINARY,
+  ) {
+    super(ctx, nt);
     this._left = l;
     this._right = r;
     this._left.parent = this;
@@ -150,7 +158,7 @@ export class BinaryOperationNode extends LanguageNode {
 }
 
 export class MultiOperationNode extends LanguageNode {
-  private _operationType: OPERATION_TYPE;
+  private _operationType: OperationType;
   private _childValues: LanguageNode[];
   public set childValues(value: LanguageNode[]) {
     this._childValues = value;
@@ -160,11 +168,11 @@ export class MultiOperationNode extends LanguageNode {
     return this._childValues;
   }
 
-  public get operationType(): OPERATION_TYPE {
+  public get operationType(): OperationType {
     return this._operationType;
   }
 
-  constructor(ctx: ParserRuleContext | null, ot: OPERATION_TYPE, cv: Array<LanguageNode>) {
+  constructor(ctx: ParserRuleContext | null, ot: OperationType, cv: Array<LanguageNode>) {
     super(ctx, NodeType.MULTI);
 
     this._operationType = ot;

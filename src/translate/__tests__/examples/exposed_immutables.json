@@ -1,0 +1,28 @@
+{
+  "exprs": {
+    "3711089302": "(declare-fun |__deepreason_expr_tmp_BitVec(160)| () (_ BitVec 160)) (declare-fun VaultBasic_addr () (_ BitVec 160)) (assert (= VaultBasic_addr |__deepreason_expr_tmp_BitVec(160)|)) ",
+    "3008890231": "(declare-fun |__deepreason_expr_tmp_BitVec(256)| () (_ BitVec 256)) (assert (= #x0000000000000000000000000000000000000000000000000000000000000005    |__deepreason_expr_tmp_BitVec(256)|)) ",
+    "1201019808": "(declare-fun |__deepreason_expr_tmp_BitVec(160)| () (_ BitVec 160)) (declare-fun Spec_addr () (_ BitVec 160)) (assert (= Spec_addr |__deepreason_expr_tmp_BitVec(160)|)) ",
+    "2479142337": "(declare-fun |__deepreason_expr_tmp_BitVec(256)| () (_ BitVec 256)) (declare-fun keccak256_424 ((_ BitVec 424)) (_ BitVec 256)) (declare-fun Spec_addr () (_ BitVec 160)) (declare-fun deployer () (_ BitVec 160)) (declare-fun nonces@init () (Array (_ BitVec 160) (_ BitVec 256))) (assert (let ((a!1 (select (store nonces@init                           deployer                           (bvadd #x0000000000000000000000000000000000000000000000000000000000000002                                  (select nonces@init deployer)))                    Spec_addr))) (let ((a!2 (concat #x000000000000000000000000                    ((_ extract 159 0)                      (keccak256_424 (concat #xb4 Spec_addr a!1))))))   (= a!2 |__deepreason_expr_tmp_BitVec(256)|)))) ",
+    "75580190": "(declare-fun |__deepreason_expr_tmp_BitVec(160)| () (_ BitVec 160)) (declare-fun VaultBasic_t4 () (_ BitVec 160)) (assert (= VaultBasic_t4 |__deepreason_expr_tmp_BitVec(160)|)) "
+  },
+  "exposedImmutables": {
+    "VaultBasic": {
+      "VaultBasic": {
+        "3711089302": 3008890231
+      }
+    },
+    "Spec": {
+      "Spec": {
+        "1201019808": 2479142337
+      },
+      "VaultBasic": {
+        "75580190": 3008890231
+      }
+    }
+  },
+  "deploymentAddresses": {
+    "VaultBasic": 3711089302,
+    "Spec": 1201019808
+  }
+}

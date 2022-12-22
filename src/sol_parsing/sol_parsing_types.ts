@@ -23,35 +23,39 @@ export type UserDefinedVarType = {
 };
 export type ArrayVarType = {
   type: VarTypeKind.ArrayTypeName;
-  baseType: VarType;
+  baseType: SolidityVarType;
   length: any;
 };
 export type MappingVarType = {
   type: VarTypeKind.Mapping;
-  keyType: ElementaryVarType | UserDefinedVarType;
-  valueType: VarType;
+  keyType: ElementaryVarType;
+  valueType: SolidityVarType;
 };
-export type VarType = ElementaryVarType | MappingVarType | ArrayVarType | UserDefinedVarType;
-export type ContractVarData = {
-  name: string;
-  typeString: string;
-  type: VarType;
-  bytes: number;
-  id: number;
-  slot: SlotInfo;
-  mutability: Mutability;
-};
+
+export type SolidityVarType = ElementaryVarType | MappingVarType | ArrayVarType | UserDefinedVarType;
+
 export type StructVarData = {
   name: string;
   typeString: string;
-  type: VarType;
+  type: SolidityVarType;
   bytes: number;
   slot: SlotInfo;
   id: number;
 };
+
+export type ContractVarData = StructVarData & {
+  mutability: Mutability;
+};
+
+export enum UserDefinedTypeKind {
+  CONTRACT = 'Contract',
+  STRUCT = 'Struct',
+  ENUM = 'Enum',
+}
+
 export type ContractTypeObject = {
   id: number;
-  type: 'Contract';
+  type: UserDefinedTypeKind;
   sourceUnit: string;
   name: string;
   subtypes: {
@@ -61,26 +65,32 @@ export type ContractTypeObject = {
     [varName: string]: ContractVarData;
   };
 };
+
 export type StructTypeObject = {
   id: number;
-  type: 'Struct';
+  type: UserDefinedTypeKind.STRUCT;
   name: string;
   subtypes: {
     [typeName: string]: number;
   };
+  bytes: number;
   vars: {
     [varName: string]: StructVarData;
   };
 };
+
 export type EnumTypeObject = {
   id: number;
-  type: 'Enum';
+  type: UserDefinedTypeKind.ENUM;
   name: string;
+  bytes: number;
   values: {
     [valueName: string]: number;
   };
 };
+
 export type TypeObject = ContractTypeObject | StructTypeObject | EnumTypeObject;
+
 export type ParsedSolidityData = {
   contractId: {
     [contractName: string]: number;

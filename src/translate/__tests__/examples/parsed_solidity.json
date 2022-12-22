@@ -1,1 +1,276 @@
-{"contractId": {"VaultBasic": 93, "Spec": 131}, "sourceUnits": {"contracts/VaultBasic.sol": {"contracts": [93], "types": {"VaultBasic": 93}}, "contracts/verification/Spec.sol": {"contracts": [131], "types": {"Spec": 131, "VaultBasic": 93}}}, "typeObjects": {"6": {"type": "Struct", "name": "TestStruct", "id": 6, "subtypes": {}, "vars": {"a": {"name": "a", "typeString": "uint32", "type": {"type": 2, "name": "uint32", "stateMutability": "nonpayable"}, "bytes": 0, "slot": {"slot": [0, 0], "intraSlot": [0, 4]}, "id": 3}, "b": {"name": "b", "typeString": "uint32", "type": {"type": 2, "name": "uint32", "stateMutability": "nonpayable"}, "bytes": 0, "slot": {"slot": [0, 0], "intraSlot": [4, 8]}, "id": 5}}}, "10": {"type": "Enum", "name": "TestEnum", "id": 10, "values": {"A": 0, "B": 1, "C": 2}}, "93": {"type": "Contract", "sourceUnit": "contracts/VaultBasic.sol", "name": "VaultBasic", "id": 93, "subtypes": {"TestStruct": 6, "TestEnum": 10}, "vars": {"x": {"name": "x", "typeString": "uint256", "type": {"type": 2, "name": "uint", "stateMutability": "nonpayable"}, "bytes": 0, "slot": {"slot": [0, 0]}, "id": 12, "mutability": "mutable"}, "y": {"name": "y", "typeString": "uint64", "type": {"type": 2, "name": "uint64", "stateMutability": "nonpayable"}, "bytes": 0, "slot": {"slot": [1, 1], "intraSlot": [0, 8]}, "id": 14, "mutability": "mutable"}, "z": {"name": "z", "typeString": "address", "type": {"type": 2, "name": "address", "stateMutability": "nonpayable"}, "bytes": 0, "slot": {"slot": [1, 1], "intraSlot": [8, 28]}, "id": 16, "mutability": "mutable"}, "balance": {"name": "balance", "typeString": "mapping(address => uint256)", "type": {"type": 0, "keyType": {"type": 2, "name": "address", "stateMutability": "nonpayable"}, "valueType": {"type": 2, "name": "uint256", "stateMutability": "nonpayable"}}, "bytes": 0, "slot": {"slot": [2, 2]}, "id": 20, "mutability": "mutable"}, "test": {"name": "test", "typeString": "mapping(uint256 => uint256)", "type": {"type": 0, "keyType": {"type": 2, "name": "uint256", "stateMutability": "nonpayable"}, "valueType": {"type": 2, "name": "uint", "stateMutability": "nonpayable"}}, "bytes": 0, "slot": {"slot": [3, 3]}, "id": 24, "mutability": "mutable"}, "testStruct": {"name": "testStruct", "typeString": "struct VaultBasic.TestStruct", "type": {"type": 3, "name": "TestStruct"}, "bytes": 0, "slot": {"slot": [4, 4]}, "id": 27, "mutability": "mutable"}, "t": {"name": "t", "typeString": "uint8", "type": {"type": 2, "name": "uint8", "stateMutability": "nonpayable"}, "bytes": 0, "slot": {"slot": [0, 0]}, "id": 29, "mutability": "immutable"}}}, "131": {"type": "Contract", "sourceUnit": "contracts/verification/Spec.sol", "name": "Spec", "id": 131, "subtypes": {}, "vars": {"vault": {"name": "vault", "typeString": "contract VaultBasic", "type": {"type": 3, "name": "VaultBasic"}, "bytes": 0, "slot": {"slot": [0, 0]}, "id": 99, "mutability": "immutable"}}}}}
+{
+  "contractId": {
+    "VaultBasic": 93,
+    "Spec": 131
+  },
+  "sourceUnits": {
+    "contracts/VaultBasic.sol": {
+      "contracts": [
+        93
+      ],
+      "types": {
+        "VaultBasic": 93
+      }
+    },
+    "contracts/verification/Spec.sol": {
+      "contracts": [
+        131
+      ],
+      "types": {
+        "Spec": 131,
+        "VaultBasic": 93
+      }
+    }
+  },
+  "typeObjects": {
+    "6": {
+      "type": "Struct",
+      "name": "TestStruct",
+      "id": 6,
+      "bytes": 32,
+      "subtypes": {},
+      "vars": {
+        "a": {
+          "name": "a",
+          "typeString": "uint32",
+          "type": {
+            "type": 2,
+            "name": "uint32",
+            "stateMutability": "nonpayable"
+          },
+          "bytes": 0,
+          "slot": {
+            "slot": [
+              0,
+              0
+            ],
+            "intraSlot": [
+              0,
+              4
+            ]
+          },
+          "id": 3
+        },
+        "b": {
+          "name": "b",
+          "typeString": "uint32",
+          "type": {
+            "type": 2,
+            "name": "uint32",
+            "stateMutability": "nonpayable"
+          },
+          "bytes": 0,
+          "slot": {
+            "slot": [
+              0,
+              0
+            ],
+            "intraSlot": [
+              4,
+              8
+            ]
+          },
+          "id": 5
+        }
+      }
+    },
+    "10": {
+      "type": "Enum",
+      "name": "TestEnum",
+      "id": 10,
+      "bytes": 1,
+      "values": {
+        "A": 0,
+        "B": 1,
+        "C": 2
+      }
+    },
+    "93": {
+      "type": "Contract",
+      "sourceUnit": "contracts/VaultBasic.sol",
+      "name": "VaultBasic",
+      "id": 93,
+      "subtypes": {
+        "TestStruct": 6,
+        "TestEnum": 10
+      },
+      "vars": {
+        "x": {
+          "name": "x",
+          "typeString": "uint256",
+          "type": {
+            "type": 2,
+            "name": "uint",
+            "stateMutability": "nonpayable"
+          },
+          "bytes": 0,
+          "slot": {
+            "slot": [
+              0,
+              0
+            ]
+          },
+          "id": 12,
+          "mutability": "mutable"
+        },
+        "y": {
+          "name": "y",
+          "typeString": "uint64",
+          "type": {
+            "type": 2,
+            "name": "uint64",
+            "stateMutability": "nonpayable"
+          },
+          "bytes": 0,
+          "slot": {
+            "slot": [
+              1,
+              1
+            ],
+            "intraSlot": [
+              0,
+              8
+            ]
+          },
+          "id": 14,
+          "mutability": "mutable"
+        },
+        "z": {
+          "name": "z",
+          "typeString": "address",
+          "type": {
+            "type": 2,
+            "name": "address",
+            "stateMutability": "nonpayable"
+          },
+          "bytes": 0,
+          "slot": {
+            "slot": [
+              1,
+              1
+            ],
+            "intraSlot": [
+              8,
+              28
+            ]
+          },
+          "id": 16,
+          "mutability": "mutable"
+        },
+        "balance": {
+          "name": "balance",
+          "typeString": "mapping(address => uint256)",
+          "type": {
+            "type": 0,
+            "keyType": {
+              "type": 2,
+              "name": "address",
+              "stateMutability": "nonpayable"
+            },
+            "valueType": {
+              "type": 2,
+              "name": "uint256",
+              "stateMutability": "nonpayable"
+            }
+          },
+          "bytes": 0,
+          "slot": {
+            "slot": [
+              2,
+              2
+            ]
+          },
+          "id": 20,
+          "mutability": "mutable"
+        },
+        "test": {
+          "name": "test",
+          "typeString": "mapping(uint256 => uint256)",
+          "type": {
+            "type": 0,
+            "keyType": {
+              "type": 2,
+              "name": "uint256",
+              "stateMutability": "nonpayable"
+            },
+            "valueType": {
+              "type": 2,
+              "name": "uint",
+              "stateMutability": "nonpayable"
+            }
+          },
+          "bytes": 0,
+          "slot": {
+            "slot": [
+              3,
+              3
+            ]
+          },
+          "id": 24,
+          "mutability": "mutable"
+        },
+        "testStruct": {
+          "name": "testStruct",
+          "typeString": "struct VaultBasic.TestStruct",
+          "type": {
+            "type": 3,
+            "name": "TestStruct"
+          },
+          "bytes": 0,
+          "slot": {
+            "slot": [
+              4,
+              4
+            ]
+          },
+          "id": 27,
+          "mutability": "mutable"
+        },
+        "t": {
+          "name": "t",
+          "typeString": "uint8",
+          "type": {
+            "type": 2,
+            "name": "uint8",
+            "stateMutability": "nonpayable"
+          },
+          "bytes": 0,
+          "slot": {
+            "slot": [
+              0,
+              0
+            ]
+          },
+          "id": 29,
+          "mutability": "immutable"
+        }
+      }
+    },
+    "131": {
+      "type": "Contract",
+      "sourceUnit": "contracts/verification/Spec.sol",
+      "name": "Spec",
+      "id": 131,
+      "subtypes": {},
+      "vars": {
+        "vault": {
+          "name": "vault",
+          "typeString": "contract VaultBasic",
+          "type": {
+            "type": 3,
+            "name": "VaultBasic"
+          },
+          "bytes": 0,
+          "slot": {
+            "slot": [
+              0,
+              0
+            ]
+          },
+          "id": 99,
+          "mutability": "immutable"
+        }
+      }
+    }
+  }
+}
