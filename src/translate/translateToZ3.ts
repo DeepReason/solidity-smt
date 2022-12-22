@@ -191,7 +191,14 @@ function _nodeToSolidityExpr(node: LanguageNode, ctx: TranslationContext): Solid
           );
           break;
         case OperationType.EXP:
-          op = makeNumericOperator(ctx, '**', undefined);
+          op = makeNumericOperator(ctx, '**', undefined, (a, b) => {
+            const z3 = ctx.z3;
+            if (z3.isBitVecVal(a) && z3.isBitVecVal(b)) {
+              return z3.BitVec.val(a.value() ** b.value(), a.size());
+            } else {
+              throw Error('** operator not supported between non-constants');
+            }
+          });
           break;
         case OperationType.GT:
           op = makeNumericOperator(
