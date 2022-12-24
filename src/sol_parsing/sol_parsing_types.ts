@@ -19,6 +19,7 @@ export type ElementaryVarType = {
 };
 export type UserDefinedVarType = {
   type: VarTypeKind.UserDefinedTypeName;
+  id: number;
   name: string;
 };
 export type ArrayVarType = {

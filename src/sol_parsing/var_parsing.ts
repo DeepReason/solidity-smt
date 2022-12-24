@@ -51,12 +51,12 @@ export function stateVarDeclToBytes(varDecl: VariableDeclaration): number {
   return varDeclToBytes(varDecl);
 }
 
-export function elementaryTypeNameToByte(name: string): number {
+export function elementaryTypeNameToBytes(name: string): number {
   if (name.startsWith('uint')) {
     const vStr = name.substring(4) || '256';
     const re = /^[1-9]\d*$/;
     if (!re.test(vStr)) {
-      throw new Error('ERROR: Invalid uint size: ' + name);
+      throw new Error('Invalid uint size: ' + name);
     }
     const v = parseInt(vStr);
     assert(v % 8 === 0 && v >= 8 && v <= 256);
@@ -66,7 +66,7 @@ export function elementaryTypeNameToByte(name: string): number {
     const vStr = name.substring(3) || '256';
     const re = /^[1-9]\d*$/;
     if (!re.test(vStr)) {
-      throw new Error('ERROR: Invalid uint size: ' + name);
+      throw new Error('Invalid uint size: ' + name);
     }
     const v = parseInt(vStr);
     assert(v % 8 === 0 && v >= 8 && v <= 256);
@@ -79,7 +79,7 @@ export function elementaryTypeNameToByte(name: string): number {
     const vStr = name.substring(5) || '32';
     const re = /^[1-9]\d+$/;
     if (!re.test(vStr)) {
-      throw new Error('ERROR: Invalid elementary type: ' + name);
+      throw new Error('Invalid elementary type: ' + name);
     }
     const v = parseInt(vStr);
     assert(v >= 1 && v <= 32);
@@ -106,5 +106,5 @@ export function varDeclToBytes(varDecl: VariableDeclaration): number {
     return 32;
   }
 
-  return elementaryTypeNameToByte(name);
+  return elementaryTypeNameToBytes(name);
 }

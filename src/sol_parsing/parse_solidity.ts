@@ -121,6 +121,7 @@ function getStructVarData(astStruct: StructDefinition): {
 
   return structVars;
 }
+
 function getSolidityDataFromSourceUnits(solcOutputSources: SourceUnit[]): ParsedSolidityData {
   const solidityData: ParsedSolidityData = {
     contractId: {},

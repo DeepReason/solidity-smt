@@ -4,6 +4,7 @@ import { ExposedImmutables } from './exposedImmutables';
 import { Z3Obj } from '../z3';
 import { ParserRuleContext } from 'antlr4ts';
 import { UserDefinedTypeKind } from '../sol_parsing/sol_parsing_types';
+import { Z3Globals } from './solidityZ3Generator';
 
 export enum SolidityExprType {
   ELEMENTARY = 'Elementary',
@@ -32,6 +33,7 @@ export type ElementarySolidityExpr = SolidityExprBase & {
 
 export type MappingSolidityExpr = SolidityExprBase & {
   type: SolidityExprType.MAPPING;
+  globals: Z3Globals;
   contractAddress: BitVec<160>;
   slot: BitVec<256>;
   varType: MappingVarType;
@@ -39,6 +41,7 @@ export type MappingSolidityExpr = SolidityExprBase & {
 
 export type ArraySolidityExpr = SolidityExprBase & {
   type: SolidityExprType.ARRAY;
+  globals: Z3Globals;
   contractAddress: BitVec<160>;
   slot: BitVec<256>;
   varType: ArrayVarType;
@@ -52,12 +55,14 @@ export type AccessibleSolidityExprBase = SolidityExprBase & {
 export type ContractSolidityExpr = AccessibleSolidityExprBase & {
   accessibleType: AccessibleSolidityExprType.CONTRACT;
   id: number;
+  globals: Z3Globals;
   contractAddress: BitVec<160>;
 };
 
 export type StructSolidityExpr = AccessibleSolidityExprBase & {
   accessibleType: AccessibleSolidityExprType.STRUCT;
   id: number;
+  globals: Z3Globals;
   contractAddress: BitVec<160>;
   slot: BitVec<256>;
   offset: number;

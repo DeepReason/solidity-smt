@@ -1,20 +1,41 @@
 import { loads_expr, Z3Obj } from '../z3';
 import { Expr } from 'z3-solver';
+import { AnySort, SortToExprMap } from '../../z3/src/api/js/src/high-level';
+
+export type Serialized<T> = {
+  [Key in keyof T]: T[Key] extends Expr ? string : T[Key] extends object ? Serialized<T[Key]> : T[Key];
+};
 
 export type ExposedImmutables = {
   exposedImmutables: {
-    [contractName: string]: {
-      [varName: string]: {
-        [addressHash: string]: Expr;
+    [deployContract: string]: {
+      [contractName: string]: {
+        [varName: string]: {
+          [addressHash: string]: Expr;
+        };
       };
     };
   };
   deploymentAddresses: {
-    [contractName: string]: Expr;
+    [graphContract: string]: {
+      [contractName: string]: {
+        address: Expr;
+        expanded: Expr;
+      };
+    };
   };
 };
 
-export function loadExposedImmutables(z3: Z3Obj, exposedImmutablesJSON: any): ExposedImmutables {
+export type SerializedExposedImmutables = Serialized<ExposedImmutables> & {
+  exprs: {
+    [exprHash: string]: string;
+  };
+};
+
+export function loadExposedImmutables(
+  z3: Z3Obj,
+  exposedImmutablesJSON: SerializedExposedImmutables,
+): ExposedImmutables {
   const res: ExposedImmutables = {
     exposedImmutables: {},
     deploymentAddresses: {},
@@ -27,15 +48,20 @@ export function loadExposedImmutables(z3: Z3Obj, exposedImmutablesJSON: any): Ex
     exprs[exprHash] = loads_expr(z3, exprStr as string) as Expr;
   }
   res.exposedImmutables = Object.fromEntries(
-    Object.entries(exposedImmutablesJSON.exposedImmutables).map(([contractName, contractImmutables]) => [
-      contractName,
+    Object.entries(exposedImmutablesJSON.exposedImmutables).map(([deployContract, deploymentImmutables]) => [
+      deployContract,
       Object.fromEntries(
-        Object.entries(contractImmutables as any).map(([varName, varImmutables]) => [
-          varName,
+        Object.entries(deploymentImmutables as any).map(([contractName, contractImmutables]) => [
+          contractName,
           Object.fromEntries(
-            Object.entries(varImmutables as any).map(([addressHash, exprHash]) => [
-              addressHash,
-              exprs[exprHash as number],
+            Object.entries(contractImmutables as any).map(([varName, varImmutables]) => [
+              varName,
+              Object.fromEntries(
+                Object.entries(varImmutables as any).map(([addressHash, exprHash]) => [
+                  addressHash,
+                  exprs[exprHash as number],
+                ]),
+              ),
             ]),
           ),
         ]),
@@ -43,9 +69,18 @@ export function loadExposedImmutables(z3: Z3Obj, exposedImmutablesJSON: any): Ex
     ]),
   );
   res.deploymentAddresses = Object.fromEntries(
-    Object.entries(exposedImmutablesJSON.deploymentAddresses).map(([k, v]) => {
-      return [k, exprs[v as number]];
-    }),
+    Object.entries(exposedImmutablesJSON.deploymentAddresses).map(([graphContract, deployInfo]) => [
+      graphContract,
+      Object.fromEntries(
+        Object.entries(deployInfo as any).map(([contractName, contractAddressInfo]) => [
+          contractName,
+          {
+            address: exprs[(contractAddressInfo as any).address as number],
+            expanded: exprs[(contractAddressInfo as any).expanded as number],
+          },
+        ]),
+      ),
+    ]),
   );
   return res;
 }

@@ -1,6 +1,6 @@
 import assert from 'assert';
 import { ArrayTypeName, ElementaryTypeName, Mapping, TypeName, UserDefinedTypeName } from 'solc-typed-ast';
-import { elementaryTypeNameToByte } from './var_parsing';
+import { elementaryTypeNameToBytes } from './var_parsing';
 import { ElementaryVarType, UserDefinedVarType, SolidityVarType, VarTypeKind } from './sol_parsing_types';
 
 export function solidityTypeToString(varType: SolidityVarType): string {
@@ -36,9 +36,9 @@ export function isSameSolidityType(varType1: SolidityVarType, varType2: Solidity
       const name1 = varType1.name;
       const name2 = varType2.name;
       if (name1.startsWith('uint') && name2.startsWith('uint')) {
-        return elementaryTypeNameToByte(name1) === elementaryTypeNameToByte(name2);
+        return elementaryTypeNameToBytes(name1) === elementaryTypeNameToBytes(name2);
       } else if (name1.startsWith('int') && name2.startsWith('int')) {
-        return elementaryTypeNameToByte(name1) === elementaryTypeNameToByte(name2);
+        return elementaryTypeNameToBytes(name1) === elementaryTypeNameToBytes(name2);
       }
       return name1 === name2;
     case VarTypeKind.Mapping:
@@ -87,6 +87,7 @@ export function typeNameToSolidityType(typeName: TypeName): SolidityVarType {
     const userDefinedTypeName = typeName as UserDefinedTypeName;
     return {
       type: VarTypeKind.UserDefinedTypeName,
+      id: userDefinedTypeName.referencedDeclaration,
       name: userDefinedTypeName.path!.name!,
     };
   }

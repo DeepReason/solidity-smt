@@ -214,6 +214,7 @@
           "typeString": "struct VaultBasic.TestStruct",
           "type": {
             "type": 3,
+            "id": 6,
             "name": "TestStruct"
           },
           "bytes": 0,
@@ -258,6 +259,7 @@
           "typeString": "contract VaultBasic",
           "type": {
             "type": 3,
+            "id": 93,
             "name": "VaultBasic"
           },
           "bytes": 0,

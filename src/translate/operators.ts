@@ -1,14 +1,15 @@
 import { BitVec, Bool, Expr } from '../z3/z3';
-import { SolidityExpr, SolidityExprType, TranslationContext } from './sharedTypes';
+import { ElementarySolidityExpr, SolidityExpr, SolidityExprType, TranslationContext } from './sharedTypes';
 import { castTo } from './valueType';
 import {
-  elementaryTypeNameToByte,
+  elementaryTypeNameToBytes,
   ElementaryVarType,
   isSameSolidityType,
   makeElementarySolidityType,
   solidityTypeToString,
 } from '../sol_parsing';
 import assert from 'assert';
+import { repr_of_expr } from '../z3';
 
 type BitVecBinaryFunc = (left: BitVec, right: BitVec) => Expr;
 type BooleanBinaryFunc = (left: Bool, right: Bool) => Expr;
@@ -104,6 +105,46 @@ export type BinarySolidityExprOperator = {
   call: (a: SolidityExpr, b: SolidityExpr) => SolidityExpr;
 };
 
+export class CastFailure extends Error {
+  constructor() {
+    super(`Cast failure`);
+  }
+}
+
+export function castElementaries(
+  left: ElementarySolidityExpr,
+  right: ElementarySolidityExpr,
+  ctx: TranslationContext,
+): [ElementarySolidityExpr, ElementarySolidityExpr] {
+  let works = true;
+  if (!isSameSolidityType(left.varType, right.varType)) {
+    const lt = left.varType;
+    const rt = right.varType;
+    // Handle casting to each other
+    if (
+      (lt.name.startsWith('int') && rt.name.startsWith('int')) ||
+      (lt.name.startsWith('uint') && rt.name.startsWith('uint'))
+    ) {
+      const leftBytes = elementaryTypeNameToBytes(lt.name);
+      const rightBytes = elementaryTypeNameToBytes(rt.name);
+      if (leftBytes > rightBytes) {
+        right = castTo(right, lt, ctx);
+      } else {
+        left = castTo(left, rt, ctx);
+      }
+      const z3 = ctx.z3;
+      assert(z3.isBitVec(left.expr) && z3.isBitVec(right.expr));
+      assert(left.expr.size() === right.expr.size());
+    } else {
+      works = false;
+    }
+  }
+  if (!works) throw new CastFailure();
+  assert(isSameSolidityType(left.varType, right.varType));
+
+  return [left, right];
+}
+
 export function makeNumericOperator(
   ctx: TranslationContext,
   op_name: string,
@@ -132,28 +173,11 @@ export function makeNumericOperator(
         throw fail();
       }
 
-      let works = true;
-      if (!isSameSolidityType(leftExpr.varType, rightExpr.varType)) {
-        const lt = leftExpr.varType;
-        const rt = rightExpr.varType;
-        // Handle casting to each other
-        if (
-          (lt.name.startsWith('int') && rt.name.startsWith('int')) ||
-          (lt.name.startsWith('uint') && rt.name.startsWith('uint'))
-        ) {
-          const leftBytes = elementaryTypeNameToByte(lt.name);
-          const rightBytes = elementaryTypeNameToByte(rt.name);
-          if (leftBytes > rightBytes) {
-            rightExpr = castTo(rightExpr, lt, ctx);
-          } else {
-            leftExpr = castTo(leftExpr, rt, ctx);
-          }
-        } else {
-          works = false;
-        }
+      try {
+        [leftExpr, rightExpr] = castElementaries(leftExpr, rightExpr, ctx);
+      } catch (e) {
+        throw fail();
       }
-      if (!works) throw fail();
-      assert(isSameSolidityType(leftExpr.varType, rightExpr.varType));
 
       const inputSolidityType = leftExpr.varType;
       let outputSolidityType: ElementaryVarType =

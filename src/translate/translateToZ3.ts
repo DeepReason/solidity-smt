@@ -15,7 +15,7 @@ import {
 } from '../language/LanguageNode';
 import { ASTExpr, low_level_tag_expr, tagSolidityExpr } from './solidityZ3Generator';
 import assert from 'assert';
-import { elementaryTypeNameToByte, makeElementarySolidityType, ParsedSolidityData } from '../sol_parsing';
+import { elementaryTypeNameToBytes, makeElementarySolidityType, ParsedSolidityData } from '../sol_parsing';
 import { loadExposedImmutables } from './exposedImmutables';
 import {
   AccessibleSolidityExprType,
@@ -25,9 +25,18 @@ import {
   TranslationContext,
 } from './sharedTypes';
 import { castTo } from './valueType';
-import { accessibleValues, dotAccess, getDefaultContractExpr, getTypeFromObjectId, mappingAccess } from './dotAccess';
+import {
+  accessibleValues,
+  dotAccess,
+  getDefaultContractExpr,
+  getTypeFromObjectId,
+  mappingAccess,
+  UnimplementedError,
+} from './dotAccess';
 import {
   BinarySolidityExprOperator,
+  castElementaries,
+  CastFailure,
   makeBooleanOperator,
   makeNumericOperator,
   NumericOperatorOutputType,
@@ -56,21 +65,39 @@ function fillInitialVarScope(ctx: TranslationContext) {
     try {
       scope.set(varName, dotAccess(contract, varName, ctx));
     } catch (e) {
-      ctx.warnings.push('skipping variable ' + varName);
+      if (e instanceof UnimplementedError) {
+        ctx.warnings.push('skipping variable ' + varName);
+      } else {
+        throw e;
+      }
     }
   }
   for (const [varName, objectId] of Object.entries(ctx.parsedSolidityData.sourceUnits[source].types)) {
     try {
       scope.set(varName, getTypeFromObjectId(objectId, ctx));
     } catch (e) {
-      ctx.warnings.push('skipping variable ' + varName);
+      if (e instanceof UnimplementedError) {
+        ctx.warnings.push('skipping type ' + varName);
+      } else {
+        throw e;
+      }
     }
   }
 }
 
 function nodeToSolidityExpr(node: LanguageNode, ctx: TranslationContext): SolidityExpr {
+  const res = _nodeToSolidityExpr(node, ctx);
+  if (res.type === SolidityExprType.ELEMENTARY) {
+    if (res.varType.name === 'string') {
+    } else if (res.varType.name === 'bool') {
+      assert(ctx.z3.isBool(res.expr));
+    } else {
+      assert(ctx.z3.isBitVec(res.expr));
+      assert(elementaryTypeNameToBytes(res.varType.name) * 8 === res.expr.size());
+    }
+  }
   return {
-    ..._nodeToSolidityExpr(node, ctx),
+    ...res,
     ctx: node.ctx!,
   };
 }
@@ -107,21 +134,6 @@ function _nodeToSolidityExpr(node: LanguageNode, ctx: TranslationContext): Solid
       let dataleft = nodeToSolidityExpr(dataComparison.left, ctx);
       let dataright = nodeToSolidityExpr(dataComparison.right, ctx);
 
-      // Comparison between elementary types should be handled here
-      if (dataleft.type === SolidityExprType.ELEMENTARY) {
-        try {
-          dataright = castTo(dataright, dataleft.varType, ctx);
-        } catch (e) {
-          throw new Error(`Cannot compare ${dataleft.ctx!.text} and ${dataright.ctx!.text}`);
-        }
-      } else if (dataright.type === SolidityExprType.ELEMENTARY) {
-        try {
-          dataleft = castTo(dataleft, dataright.varType, ctx);
-        } catch (e) {
-          throw new Error(`Cannot compare ${dataleft.ctx!.text} and ${dataright.ctx!.text}`);
-        }
-      }
-
       if (
         dataleft.type === SolidityExprType.ACCESSIBLE &&
         dataright.type === SolidityExprType.ACCESSIBLE &&
@@ -132,8 +144,20 @@ function _nodeToSolidityExpr(node: LanguageNode, ctx: TranslationContext): Solid
         const obj = ctx.parsedSolidityData.typeObjects[objectId];
         throw new Error('Unimplemented: comparisons between ' + obj.name);
       }
+
       if (dataleft.type !== SolidityExprType.ELEMENTARY || dataright.type !== SolidityExprType.ELEMENTARY) {
         throw new Error(`Cannot compare ${dataleft.ctx!.text} and ${dataright.ctx!.text}`);
+      }
+
+      // Comparison between elementary types should be handled here
+      try {
+        [dataleft, dataright] = castElementaries(dataleft, dataright, ctx);
+      } catch (e) {
+        if (e instanceof CastFailure) {
+          throw new Error(`Cannot compare ${dataleft.ctx!.text} and ${dataright.ctx!.text}`);
+        } else {
+          throw e;
+        }
       }
 
       switch (dataComparison.binaryOperationType) {
@@ -308,7 +332,7 @@ function _nodeToSolidityExpr(node: LanguageNode, ctx: TranslationContext): Solid
           throw new Error('Invalid variable declaration in quantifier: ' + decl);
         }
         const name = split[1];
-        const typeBytes = elementaryTypeNameToByte(split[0]);
+        const typeBytes = elementaryTypeNameToBytes(split[0]);
         if (typeBytes == 0) {
           throw new Error('Non-elementary type declaration in quantifier: ' + decl);
         }
@@ -379,30 +403,42 @@ export async function translateToZ3(
   parsedSolidityData: ParsedSolidityData,
   exposedImmutablesJSON: any,
   z3?: Z3Obj,
-): Promise<any> {
+): Promise<
+  | {
+      error: string;
+      warnings: string[];
+    }
+  | {
+      expr: Expr;
+      warnings: string[];
+    }
+> {
+  const warnings: string[] = [];
+
   try {
     const parsedInput = parseExpression(text);
 
     if (parsedInput.hasError) {
       function getNiceMessage(e: ILanguageError) {
-        const msg = e.message;
+        let msg = e.message;
         const missingTokenPattern = /mismatched input '(.*)?' expecting (.*)?/;
         if (missingTokenPattern.test(msg)) {
           const match = missingTokenPattern.exec(msg);
           if (match) {
             const [, unexpected, expected] = match;
-            return `Unexpected token ${unexpected}`;
+            msg = `Unexpected token ${unexpected}`;
           }
         }
         const emptyQVarsPattern = /missing ELEMENTARY_SOLIDITY_VAR_DECL at ']'/;
         if (emptyQVarsPattern.test(msg)) {
-          return 'No quantified variables provided';
+          msg = 'No quantified variables provided';
         }
-        return msg;
+        return 'Error: ' + msg;
       }
 
       return {
         error: parsedInput.parseErrors.map(getNiceMessage).join('\n'),
+        warnings,
       };
     }
 
@@ -415,7 +451,7 @@ export async function translateToZ3(
       contractName,
       parsedSolidityData,
       exposedImmutables,
-      warnings: [],
+      warnings,
       varScope: new Map(),
       z3,
     };
@@ -423,12 +459,12 @@ export async function translateToZ3(
 
     return {
       expr: expr,
-      warnings: ctx.warnings,
+      warnings,
     };
   } catch (e) {
-    console.error(e);
     return {
       error: '' + e,
+      warnings,
     };
   }
 }

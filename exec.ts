@@ -35,9 +35,13 @@ async function translate(options: any) {
     const parsedSolidity = JSON.parse(options.parsedSolidity);
     const exposedImmutablesJSON = JSON.parse(options.exposedImmutables);
     const result = await translateToZ3(input, contract, parsedSolidity, exposedImmutablesJSON);
-    if (result.error === undefined) {
-      result.expr = dumps_expr(result.expr);
-      console.log(JSON.stringify(result));
+    if (!('error' in result)) {
+      console.log(
+        JSON.stringify({
+          expr: dumps_expr(result.expr),
+          warnings: result.warnings,
+        }),
+      );
     }
   } catch (e) {
     console.error(e);

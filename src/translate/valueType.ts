@@ -6,7 +6,7 @@ import {
   ElementarySolidityExpr,
 } from './sharedTypes';
 import {
-  elementaryTypeNameToByte,
+  elementaryTypeNameToBytes,
   isSameSolidityType,
   makeElementarySolidityType,
   SolidityVarType,
@@ -15,13 +15,34 @@ import {
 import { BitVec } from '../z3/z3';
 import assert from 'assert';
 
+export function resizeZ3BitVec<T extends number>(expr: BitVec, newSize: T, signed: boolean = false): BitVec<T> {
+  const origSize = expr.size();
+  const z3 = expr.ctx;
+  if (z3.isBitVecVal(expr)) {
+    // Special case to simplify early
+    return z3.BitVec.val(expr.value() & BigInt((1n << BigInt(newSize)) - 1n), newSize);
+  }
+  if (newSize > origSize) {
+    if (signed) {
+      expr = expr.add(z3.BitVec.val(2n ** BigInt(expr.size() - 1), expr.size()));
+    }
+    expr = z3.Concat(z3.BitVec.val(0, newSize - origSize), expr);
+    if (signed) {
+      expr = expr.sub(z3.BitVec.val(2n ** BigInt(expr.size() - 1), expr.size()));
+    }
+  } else if (newSize < origSize) {
+    expr = z3.Extract(newSize - 1, 0, expr);
+  }
+  return expr as BitVec<T>;
+}
+
 export function castTo(
   solidityExpr: SolidityExpr,
   solidityType: SolidityVarType,
   ctx: TranslationContext,
 ): ElementarySolidityExpr {
   if (solidityType.type === VarTypeKind.ElementaryTypeName) {
-    const typeBytes = elementaryTypeNameToByte(solidityType.name);
+    const typeBytes = elementaryTypeNameToBytes(solidityType.name);
     if (solidityExpr.type === SolidityExprType.ACCESSIBLE) {
       if (
         solidityExpr.accessibleType === AccessibleSolidityExprType.CONTRACT &&
@@ -38,7 +59,7 @@ export function castTo(
       solidityExpr.type === SolidityExprType.ELEMENTARY &&
       solidityExpr.varType.type === VarTypeKind.ElementaryTypeName
     ) {
-      const uncastedBytes = elementaryTypeNameToByte(solidityExpr.varType.name);
+      const uncastedBytes = elementaryTypeNameToBytes(solidityExpr.varType.name);
       if (typeBytes !== uncastedBytes) {
         if (
           (solidityType.name.startsWith('int') && solidityExpr.varType.name.startsWith('int')) ||
@@ -47,21 +68,9 @@ export function castTo(
         ) {
           const z3 = ctx.z3;
           assert(z3.isBitVec(solidityExpr.expr));
-          let newExpr: BitVec = solidityExpr.expr;
-          if (typeBytes > uncastedBytes) {
-            if (solidityType.name.startsWith('int')) {
-              newExpr = newExpr.add(z3.BitVec.val(2n ** BigInt(uncastedBytes * 8 - 1), uncastedBytes * 8));
-            }
-            newExpr = z3.Concat(z3.BitVec.val(0, typeBytes * 8 - uncastedBytes * 8), newExpr as BitVec);
-            if (solidityType.name.startsWith('int')) {
-              newExpr = newExpr.sub(z3.BitVec.val(2n ** BigInt(uncastedBytes * 8 - 1), typeBytes * 8));
-            }
-          } else {
-            newExpr = z3.Extract(typeBytes * 8 - 1, 0, solidityExpr.expr as BitVec);
-          }
           return {
             type: SolidityExprType.ELEMENTARY,
-            expr: newExpr,
+            expr: resizeZ3BitVec(solidityExpr.expr, typeBytes * 8, solidityType.name.startsWith('name')),
             varType: solidityType,
           };
         } else {

@@ -4,8 +4,9 @@ import { makeZ3Balances, makeZ3GlobalStorage } from '../solidityZ3Generator';
 import fs from 'fs';
 import path from 'path';
 import { ParsedSolidityData } from '../../sol_parsing';
-import { dumps_expr, makeZ3, Z3Obj } from '../../z3';
+import { dumps_expr, makeZ3, repr_of_expr, Z3Obj } from '../../z3';
 import { ExposedImmutables } from '../exposedImmutables';
+import assert from 'assert';
 
 type StorageSort = SMTArray<'main', [BitVecSort<256, 'main'>], BitVecSort<256, 'main'>>;
 
@@ -14,8 +15,11 @@ describe('Test textToZ3', () => {
   let parsedSolidity: ParsedSolidityData;
   let exposedImmutables: ExposedImmutables;
 
+  let SENDER: BitVec<160>;
+
   let Z3_STORAGE: StorageSort;
   let Z3_STORAGE_BEFORE: StorageSort;
+  let Z3_STORAGE_AFTER: StorageSort;
 
   let Z3_X: (base_arr: StorageSort) => BitVec<256>;
   let Z3_Y: (base_arr: StorageSort) => BitVec<64>;
@@ -31,8 +35,12 @@ describe('Test textToZ3', () => {
     exposedImmutables = JSON.parse(fs.readFileSync(path.join(__dirname, 'examples/exposed_immutables.json'), 'utf8'));
 
     const Z3_ADDR = z3.BitVec.const('VaultBasic_addr', 160);
+
+    SENDER = z3.BitVec.const('sender', 160);
+
     Z3_STORAGE = makeZ3GlobalStorage(z3, '').select(Z3_ADDR) as StorageSort;
     Z3_STORAGE_BEFORE = makeZ3GlobalStorage(z3, '@before').select(Z3_ADDR) as StorageSort;
+    Z3_STORAGE_AFTER = makeZ3GlobalStorage(z3, '@after').select(Z3_ADDR) as StorageSort;
 
     const Z3_SLOT_0 = (storage: StorageSort) => storage.select(z3.BitVec.val(0, 256)) as BitVec<256>;
     const Z3_SLOT_1 = (storage: StorageSort) => storage.select(z3.BitVec.val(1, 256)) as BitVec<256>;
@@ -49,76 +57,90 @@ describe('Test textToZ3', () => {
       ) as BitVec;
   });
 
+  async function unerroredTranslation(input: string, contractName: string) {
+    const result = await translateToZ3(input, contractName, parsedSolidity, exposedImmutables);
+    expect(result).not.toHaveProperty('error');
+    assert(!('error' in result));
+    return result;
+  }
+
+  async function erroredTranslation(input: string, contractName: string) {
+    const result = await translateToZ3(input, contractName, parsedSolidity, exposedImmutables);
+    expect(result).toHaveProperty('error');
+    assert('error' in result);
+    return result;
+  }
+
   it('Arithmetic Expression', async () => {
-    const expr = 'x';
-    const { expr: result, warnings } = await translateToZ3(expr, 'VaultBasic', parsedSolidity, exposedImmutables);
+    const input = 'x';
+    const { expr, warnings } = await unerroredTranslation(input, 'VaultBasic');
 
     const expected = Z3_X(Z3_STORAGE);
-    expect(result.eqIdentity(expected)).toBeTruthy();
+    expect(expr.eqIdentity(expected)).toBeTruthy();
   });
 
   it('Addition Expression', async () => {
-    const expr = 'x + x';
-    const { expr: result, warnings } = await translateToZ3(expr, 'VaultBasic', parsedSolidity, exposedImmutables);
+    const input = 'x + x';
+    const { expr, warnings } = await unerroredTranslation(input, 'VaultBasic');
 
     const expected = Z3_X(Z3_STORAGE).add(Z3_X(Z3_STORAGE));
-    expect(result.eqIdentity(expected)).toBeTruthy();
+    expect(expr.eqIdentity(expected)).toBeTruthy();
   });
 
   it('BitVector Casting', async () => {
-    const expr = 'x + uint256(y)';
-    const { expr: result, warnings } = await translateToZ3(expr, 'VaultBasic', parsedSolidity, exposedImmutables);
+    const input = 'x + uint256(y)';
+    const { expr, warnings } = await unerroredTranslation(input, 'VaultBasic');
 
     const expected = Z3_X(Z3_STORAGE).add(z3.Concat(z3.BitVec.val(0, 192), Z3_Y(Z3_STORAGE)) as BitVec<256>);
-    expect(result.eqIdentity(expected)).toBeTruthy();
+    expect(expr.eqIdentity(expected)).toBeTruthy();
   });
 
   it('BitVector Implicit Type Conversion', async () => {
-    const expr = 'x + y';
-    const { expr: result, warnings } = await translateToZ3(expr, 'VaultBasic', parsedSolidity, exposedImmutables);
+    const input = 'x + y';
+    const { expr, warnings } = await unerroredTranslation(input, 'VaultBasic');
 
     const expected = Z3_X(Z3_STORAGE).add(z3.Concat(z3.BitVec.val(0, 192), Z3_Y(Z3_STORAGE)) as BitVec<256>);
-    expect(result.eqIdentity(expected)).toBeTruthy();
+    expect(expr.eqIdentity(expected)).toBeTruthy();
   });
 
   it('BitVector and Number Addition', async () => {
-    const expr = 'x + 2';
-    const { expr: result, warnings } = await translateToZ3(expr, 'VaultBasic', parsedSolidity, exposedImmutables);
+    const input = 'x + 2';
+    const { expr, warnings } = await unerroredTranslation(input, 'VaultBasic');
 
     const expected = Z3_X(Z3_STORAGE).add(z3.BitVec.val(2, 256));
-    expect(result.eqIdentity(expected)).toBeTruthy();
+    expect(expr.eqIdentity(expected)).toBeTruthy();
   });
 
   it('Balances', async () => {
-    const expr = 'balance[z]';
-    const { expr: result, warnings } = await translateToZ3(expr, 'VaultBasic', parsedSolidity, exposedImmutables);
+    const input = 'balance[z]';
+    const { expr, warnings } = await unerroredTranslation(input, 'VaultBasic');
 
     const expected = Z3_BALANCES(Z3_STORAGE, Z3_Z(Z3_STORAGE));
 
-    expect(result.eqIdentity(expected)).toBeTruthy();
+    expect(expr.eqIdentity(expected)).toBeTruthy();
   });
 
   it('Message sender', async () => {
-    const expr = 'msg.sender';
-    const { expr: result, warnings } = await translateToZ3(expr, 'VaultBasic', parsedSolidity, exposedImmutables);
+    const input = 'msg.sender';
+    const { expr, warnings } = await unerroredTranslation(input, 'VaultBasic');
 
-    const expected = z3.BitVec.const('sender', 160);
-    expect(result.eqIdentity(expected)).toBeTruthy();
+    const expected = SENDER;
+    expect(expr.eqIdentity(expected)).toBeTruthy();
   });
 
   it('Tags', async () => {
-    const expr = 'x@before';
-    const { expr: result, warnings } = await translateToZ3(expr, 'VaultBasic', parsedSolidity, exposedImmutables);
+    const input = 'x@before';
+    const { expr, warnings } = await unerroredTranslation(input, 'VaultBasic');
 
     const expected = Z3_X(Z3_STORAGE_BEFORE);
-    expect(result.eqIdentity(expected)).toBeTruthy();
+    expect(expr.eqIdentity(expected)).toBeTruthy();
   });
 
   it('Quantifier', async () => {
-    const expr = 'ForAll([address a], a.balance <= 200)';
-    const { expr: result, warnings } = await translateToZ3(expr, 'VaultBasic', parsedSolidity, exposedImmutables);
+    const input = 'ForAll([address a], a.balance <= 200)';
+    const { expr, warnings } = await unerroredTranslation(input, 'VaultBasic');
     expect(
-      result.eqIdentity(
+      expr.eqIdentity(
         z3.ForAll(
           [z3.BitVec.const('a', 160)],
           z3.ULE(makeZ3Balances(z3, '').select(z3.BitVec.const('a', 160)), z3.BitVec.val(200, 256)),
@@ -127,15 +149,38 @@ describe('Test textToZ3', () => {
     ).toBeTruthy();
   });
 
-  it('Invalid Text', async () => {
-    const result = await translateToZ3('', 'VaultBasic', parsedSolidity, exposedImmutables);
-    expect(result.error).toBe('Unexpected token <EOF>');
+  it('Arithmetic Expression', async () => {
+    const input = 'x + 7';
+    const { expr, warnings } = await unerroredTranslation(input, 'VaultBasic');
+    expect(expr.eqIdentity(Z3_X(Z3_STORAGE).add(z3.BitVec.val(7, 256)) as BitVec<256>)).toBeTruthy();
   });
 
-  it('Arithmetic Expression', async () => {
-    const result = await translateToZ3('x + 7', 'VaultBasic', parsedSolidity, exposedImmutables);
-    expect(dumps_expr(result.expr)).toEqual(
-      '(declare-fun __deepreason_claim_tmp () (_ BitVec 256)) (declare-fun VaultBasic_addr () (_ BitVec 160)) (declare-fun global_storage              ()              (Array (_ BitVec 160) (Array (_ BitVec 256) (_ BitVec 256)))) (assert (= (bvadd (select (select global_storage VaultBasic_addr)                   #x0000000000000000000000000000000000000000000000000000000000000000)           #x0000000000000000000000000000000000000000000000000000000000000007)    __deepreason_claim_tmp)) ',
-    );
+  it('Accessing Immutable', async () => {
+    const input = 't == 5';
+    const { expr, warnings } = await unerroredTranslation(input, 'VaultBasic');
+    expect(expr.eqIdentity(z3.BitVec.val(5, 256).eq(z3.BitVec.val(5, 256)))).toBeTruthy();
+  });
+
+  it('Tagging intermediate', async () => {
+    const input = 'balance@after[msg.sender] > 0';
+    const { expr, warnings } = await unerroredTranslation(input, 'VaultBasic');
+    expect(expr.eqIdentity(Z3_BALANCES(Z3_STORAGE_AFTER, SENDER).ugt(z3.BitVec.val(0, 256)))).toBeTruthy();
+  });
+
+  describe('Testing Errors', () => {
+    it('Empty Text', async () => {
+      const result = await erroredTranslation('', 'VaultBasic');
+      expect(result.error).toBe('Error: Unexpected token <EOF>');
+    });
+
+    it('Unknown identifier', async () => {
+      const result = await erroredTranslation('blah', 'Spec');
+      expect(result.error).toBe('Error: Unknown identifier: blah');
+    });
+
+    it('Non-expression', async () => {
+      const result = await erroredTranslation('test', 'VaultBasic');
+      expect(result.error).toBe('Error: Expression is a mapping');
+    });
   });
 });
