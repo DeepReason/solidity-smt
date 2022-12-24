@@ -9,6 +9,7 @@ import {
   elementaryTypeNameToBytes,
   isSameSolidityType,
   makeElementarySolidityType,
+  solidityTypeToString,
   SolidityVarType,
   VarTypeKind,
 } from '../sol_parsing';
@@ -84,5 +85,5 @@ export function castTo(
       };
     }
   }
-  throw Error('Cannot cast ' + solidityExpr.ctx!.text + ' to type ' + solidityType.type);
+  throw Error('Cannot cast ' + solidityExpr.ctx!.text + ' to type ' + solidityTypeToString(solidityType));
 }

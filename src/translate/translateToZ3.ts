@@ -308,6 +308,8 @@ function _nodeToSolidityExpr(node: LanguageNode, ctx: TranslationContext): Solid
           } else {
             throw Error('Array access not implemented');
           }
+        case OperationType.FUNCTION:
+          throw Error(children[0].ctx!.text + ' is not callable');
       }
       throw Error('Unsupported multi operation: ' + multiOp.operationType);
     case NodeType.DOT_ACCESS:

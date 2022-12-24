@@ -32,19 +32,37 @@
   },
   "deploymentAddresses": {
     "VaultBasic": {
-      "VaultBasic": {
+      "main": {
         "address": 3711089302,
         "expanded": 3890192381
+      },
+      "deployments": {
+        "VaultBasic": [
+          {
+            "address": 3711089302,
+            "expanded": 3890192381
+          }
+        ]
       }
     },
     "Spec": {
-      "Spec": {
+      "main": {
         "address": 1201019808,
         "expanded": 1094443031
       },
-      "VaultBasic": {
-        "address": 75580190,
-        "expanded": 2850883595
+      "deployments": {
+        "Spec": [
+          {
+            "address": 1201019808,
+            "expanded": 1094443031
+          }
+        ],
+        "VaultBasic": [
+          {
+            "address": 75580190,
+            "expanded": 2850883595
+          }
+        ]
       }
     }
   }

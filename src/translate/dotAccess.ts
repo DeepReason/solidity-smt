@@ -35,8 +35,7 @@ export class UnimplementedError extends Error {
 
 export function getDefaultContractExpr(ctx: TranslationContext): ContractSolidityExpr {
   const contractId = ctx.parsedSolidityData.contractId[ctx.contractName];
-  const contractAddress = ctx.exposedImmutables.deploymentAddresses[ctx.contractName][ctx.contractName]
-    .address as BitVec<160>;
+  const contractAddress = ctx.exposedImmutables.deploymentAddresses[ctx.contractName].main.address as BitVec<160>;
   return {
     type: SolidityExprType.ACCESSIBLE,
     accessibleType: AccessibleSolidityExprType.CONTRACT,

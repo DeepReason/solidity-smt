@@ -1,9 +1,21 @@
 import { loads_expr, Z3Obj } from '../z3';
 import { Expr } from 'z3-solver';
-import { AnySort, SortToExprMap } from '../../z3/src/api/js/src/high-level';
 
 export type Serialized<T> = {
   [Key in keyof T]: T[Key] extends Expr ? string : T[Key] extends object ? Serialized<T[Key]> : T[Key];
+};
+
+export type GraphDeployments = {
+  main: {
+    address: Expr;
+    expanded: Expr;
+  };
+  deployments: {
+    [contractName: string]: {
+      address: Expr;
+      expanded: Expr;
+    }[];
+  };
 };
 
 export type ExposedImmutables = {
@@ -17,12 +29,7 @@ export type ExposedImmutables = {
     };
   };
   deploymentAddresses: {
-    [graphContract: string]: {
-      [contractName: string]: {
-        address: Expr;
-        expanded: Expr;
-      };
-    };
+    [graphContract: string]: GraphDeployments;
   };
 };
 
@@ -68,19 +75,30 @@ export function loadExposedImmutables(
       ),
     ]),
   );
-  res.deploymentAddresses = Object.fromEntries(
-    Object.entries(exposedImmutablesJSON.deploymentAddresses).map(([graphContract, deployInfo]) => [
-      graphContract,
-      Object.fromEntries(
-        Object.entries(deployInfo as any).map(([contractName, contractAddressInfo]) => [
-          contractName,
-          {
-            address: exprs[(contractAddressInfo as any).address as number],
-            expanded: exprs[(contractAddressInfo as any).expanded as number],
-          },
-        ]),
-      ),
-    ]),
-  );
+  const d: {
+    [graphName: string]: GraphDeployments;
+  } = {};
+  for (const [graphContract, graphDeployInfo] of Object.entries(exposedImmutablesJSON.deploymentAddresses)) {
+    const graphDeploys: {
+      [contractName: string]: {
+        address: Expr;
+        expanded: Expr;
+      }[];
+    } = {};
+    for (const [contractName, contractDeploys] of Object.entries(graphDeployInfo.deployments)) {
+      graphDeploys[contractName] = contractDeploys.map(contractDeploy => ({
+        address: exprs[contractDeploy.address],
+        expanded: exprs[contractDeploy.expanded],
+      }));
+    }
+    d[graphContract] = {
+      main: {
+        address: exprs[graphDeployInfo.main.address],
+        expanded: exprs[graphDeployInfo.main.expanded],
+      },
+      deployments: graphDeploys,
+    };
+  }
+  res.deploymentAddresses = d;
   return res;
 }
