@@ -12,7 +12,7 @@ DUMPING EXPRESSIONS
 
 function exprToSolverClaim(expr: Expr): Bool {
   const z3 = expr.ctx;
-  return expr.eq(z3.Const('__deepreason_claim_tmp', expr.sort));
+  return z3.Function.declare('__deepreason_placeholder__', expr.sort, z3.Bool.sort()).call(expr);
 }
 
 export function dumps_expr(expr: Expr | Expr[]): string {
