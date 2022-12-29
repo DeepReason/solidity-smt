@@ -4,7 +4,7 @@ import makeZ3, {
   Bool,
   Z3Obj,
 } from './z3';
-import { Model } from 'z3-solver';
+import { Model, Quantifier } from "z3-solver";
 
 /*
 DUMPING EXPRESSIONS
@@ -72,12 +72,12 @@ export async function loads_model(z3: Z3Obj, model_str: string): Promise<Model> 
     if (!dv_str) {
       continue;
     }
-    const [f_str, val] = dv_str.split(':');
+    const [f_str, val] = dv_str.split('::');
     if (val[0] != '&') {
       m.updateValue(loads_func_decl(z3, f_str), loads_expr(z3, val) as Expr);
     } else {
       const entries = val.slice(1).split('&');
-      const else_val = loads_expr(z3, entries.pop()!) as Expr;
+      const else_val = (loads_expr(z3, entries.pop()!) as Quantifier).body() as Expr;
 
       const f = loads_func_decl(z3, f_str);
 

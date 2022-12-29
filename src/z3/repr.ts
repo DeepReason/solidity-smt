@@ -116,6 +116,14 @@ function __parenthesize(s: string) {
   }
 }
 
+function bn_to_hex(n: bigint | number) {
+  if (n < 0) {
+    return `-0x${(-n).toString(16)}`;
+  } else {
+    return `0x${n.toString(16)}`;
+  }
+}
+
 export function repr_of_expr(
   expr: Expr | Sort | FuncDecl | string | bigint | number | undefined,
   var_stack: string[] = [],
@@ -128,7 +136,11 @@ export function repr_of_expr(
     return (expr as string);
   }
   if (typeof (expr) === 'number' || typeof expr === 'bigint') {
-    return expr.toString();
+    if (typeof expr === 'number' && Math.abs(expr) <= 1024 || typeof expr === 'bigint' && expr >= -1024n && expr <= 1024n) {
+      return expr.toString();
+    } else {
+      return bn_to_hex(expr);
+    }
   }
   const z3 = (expr as (Expr | Sort | FuncDecl)).ctx;
   const {
@@ -159,8 +171,8 @@ export function repr_of_expr(
     } else {
       const x = expr as BitVecNum;
       v = (x.size() > 8) ? x.asSignedValue().toString() : x.value().toString();
-      if (x.asSignedValue() > 1024n && x.asSignedValue() < -1024n) {
-        v = x.value().toString(16);
+      if (x.asSignedValue() > 1024n || x.asSignedValue() < -1024n) {
+        v = bn_to_hex(x.asSignedValue());
       }
     }
     if (isIntVal(expr) || expr.size() == 256) {

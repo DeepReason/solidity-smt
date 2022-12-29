@@ -28,4 +28,9 @@ describe('Representation Testing', () => {
     );
   });
 
+  it('represents large numbers as hex', () => {
+    expect(repr_of_expr(z3.BitVec.val(2 ** 40, 160))).toEqual('bv160(0x10000000000)');
+    expect(repr_of_expr(z3.BitVec.val(-(2 ** 40), 160))).toEqual('bv160(-0x10000000000)');
+  })
+
 });
