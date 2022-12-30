@@ -77,7 +77,10 @@ export async function loads_model(z3: Z3Obj, model_str: string): Promise<Model> 
       m.updateValue(loads_func_decl(z3, f_str), loads_expr(z3, val) as Expr);
     } else {
       const entries = val.slice(1).split('&');
-      const else_val = (loads_expr(z3, entries.pop()!) as Quantifier).body() as Expr;
+      let else_val = loads_expr(z3, entries.pop()!) as Expr;
+      if (z3.isQuantifier(else_val)) {
+        else_val = else_val.body();
+      }
 
       const f = loads_func_decl(z3, f_str);
 
