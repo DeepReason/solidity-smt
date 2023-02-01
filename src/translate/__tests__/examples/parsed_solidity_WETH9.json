@@ -1,0 +1,177 @@
+{
+  "contractId": {
+    "WETH9": 251,
+    "Spec": 289
+  },
+  "sourceUnits": {
+    "contracts/WETH9.sol": {
+      "contracts": [
+        251
+      ],
+      "types": {
+        "WETH9": 251
+      }
+    },
+    "contracts/verification/Spec.sol": {
+      "contracts": [
+        289
+      ],
+      "types": {
+        "Spec": 289,
+        "WETH9": 251
+      }
+    }
+  },
+  "typeObjects": {
+    "251": {
+      "type": "Contract",
+      "sourceUnit": "contracts/WETH9.sol",
+      "name": "WETH9",
+      "id": 251,
+      "subtypes": {},
+      "vars": {
+        "name": {
+          "name": "name",
+          "typeString": "string",
+          "type": {
+            "type": 2,
+            "name": "string",
+            "stateMutability": "nonpayable"
+          },
+          "bytes": 0,
+          "slot": {
+            "slot": [
+              0,
+              0
+            ]
+          },
+          "id": 4,
+          "mutability": "constant"
+        },
+        "symbol": {
+          "name": "symbol",
+          "typeString": "string",
+          "type": {
+            "type": 2,
+            "name": "string",
+            "stateMutability": "nonpayable"
+          },
+          "bytes": 0,
+          "slot": {
+            "slot": [
+              0,
+              0
+            ]
+          },
+          "id": 7,
+          "mutability": "constant"
+        },
+        "decimals": {
+          "name": "decimals",
+          "typeString": "uint8",
+          "type": {
+            "type": 2,
+            "name": "uint8",
+            "stateMutability": "nonpayable"
+          },
+          "bytes": 0,
+          "slot": {
+            "slot": [
+              0,
+              0
+            ]
+          },
+          "id": 10,
+          "mutability": "constant"
+        },
+        "balanceOf": {
+          "name": "balanceOf",
+          "typeString": "mapping(address => uint256)",
+          "type": {
+            "type": 0,
+            "keyType": {
+              "type": 2,
+              "name": "address",
+              "stateMutability": "nonpayable"
+            },
+            "valueType": {
+              "type": 2,
+              "name": "uint",
+              "stateMutability": "nonpayable"
+            }
+          },
+          "bytes": 0,
+          "slot": {
+            "slot": [
+              0,
+              0
+            ]
+          },
+          "id": 42,
+          "mutability": "mutable"
+        },
+        "allowance": {
+          "name": "allowance",
+          "typeString": "mapping(address => mapping(address => uint256))",
+          "type": {
+            "type": 0,
+            "keyType": {
+              "type": 2,
+              "name": "address",
+              "stateMutability": "nonpayable"
+            },
+            "valueType": {
+              "type": 0,
+              "keyType": {
+                "type": 2,
+                "name": "address",
+                "stateMutability": "nonpayable"
+              },
+              "valueType": {
+                "type": 2,
+                "name": "uint",
+                "stateMutability": "nonpayable"
+              }
+            }
+          },
+          "bytes": 0,
+          "slot": {
+            "slot": [
+              1,
+              1
+            ]
+          },
+          "id": 48,
+          "mutability": "mutable"
+        }
+      }
+    },
+    "289": {
+      "type": "Contract",
+      "sourceUnit": "contracts/verification/Spec.sol",
+      "name": "Spec",
+      "id": 289,
+      "subtypes": {},
+      "vars": {
+        "weth": {
+          "name": "weth",
+          "typeString": "contract WETH9",
+          "type": {
+            "type": 3,
+            "id": 251,
+            "name": "WETH9"
+          },
+          "bytes": 0,
+          "slot": {
+            "slot": [
+              0,
+              0
+            ]
+          },
+          "id": 257,
+          "mutability": "immutable"
+        }
+      }
+    }
+  }
+}

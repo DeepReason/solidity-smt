@@ -1,5 +1,7 @@
 import { repr_of_expr } from '../repr';
 import makeZ3, { Z3Obj } from '../z3';
+import { loads_expr } from "../dumps_loads";
+import { Expr } from "z3-solver";
 
 describe('Representation Testing', () => {
   let z3: Z3Obj;

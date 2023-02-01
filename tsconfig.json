@@ -113,4 +113,5 @@
     "index.ts",
     "browser.ts"
   ],
+    "exclude": ["node_modules", "build", "z3/"]
 }

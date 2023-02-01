@@ -130,7 +130,7 @@ export function dotAccess(accessible: SolidityExpr, member: string, ctx: Transla
         const slot = varData.slot.slot[0];
 
         const type = varData.type;
-        if (varData.mutability !== Mutability.Mutable) {
+        if (varData.mutability === Mutability.Immutable) {
           const im = ctx.exposedImmutables;
           const imInfo = im.exposedImmutables[ctx.contractName][contract.name];
           assert(member in imInfo);
@@ -163,39 +163,45 @@ export function dotAccess(accessible: SolidityExpr, member: string, ctx: Transla
           } else {
             throw new Error('Could not decode the value of ' + member + ' in ' + accessible.ctx!.text);
           }
-        }
-        if (type.type == VarTypeKind.ElementaryTypeName) {
-          let expr = accessible.globals.storage
-            .select(accessible.contractAddress)
-            .select(z3.BitVec.val(slot, 256)) as BitVec;
-          if (varData.slot.intraSlot) {
-            const offset = varData.slot.intraSlot[0];
-            const intraSlotEnd = offset + elementaryTypeNameToBytes(type.name);
-            expr = z3.Extract(255 - offset * 8, 256 - intraSlotEnd * 8, expr);
-          }
-          return {
-            type: SolidityExprType.ELEMENTARY,
-            varType: type,
-            expr,
-          };
-        } else if (type.type == VarTypeKind.Mapping) {
-          return {
-            type: SolidityExprType.MAPPING,
-            varType: type,
-            globals: accessible.globals,
-            contractAddress: accessible.contractAddress,
-            slot: z3.BitVec.val(slot, 256),
-          };
-        } else if (type.type == VarTypeKind.ArrayTypeName) {
-          return {
-            type: SolidityExprType.ARRAY,
-            varType: type,
-            globals: accessible.globals,
-            contractAddress: accessible.contractAddress,
-            slot: z3.BitVec.val(slot, 256),
-          };
+        } else if (varData.mutability === Mutability.Constant) {
+          throw new UnimplementedError('Constant variables not supported');
         } else {
-          throw new UnimplementedError('Accessing user defined type variables in contracts');
+          if (type.type == VarTypeKind.ElementaryTypeName) {
+            if (type.name === 'string' || type.name === 'bytes') {
+              throw new UnimplementedError(`Type ${type.name} not supported`);
+            }
+            let expr = accessible.globals.storage
+              .select(accessible.contractAddress)
+              .select(z3.BitVec.val(slot, 256)) as BitVec;
+            if (varData.slot.intraSlot) {
+              const offset = varData.slot.intraSlot[0];
+              const intraSlotEnd = offset + elementaryTypeNameToBytes(type.name);
+              expr = z3.Extract(255 - offset * 8, 256 - intraSlotEnd * 8, expr);
+            }
+            return {
+              type: SolidityExprType.ELEMENTARY,
+              varType: type,
+              expr,
+            };
+          } else if (type.type == VarTypeKind.Mapping) {
+            return {
+              type: SolidityExprType.MAPPING,
+              varType: type,
+              globals: accessible.globals,
+              contractAddress: accessible.contractAddress,
+              slot: z3.BitVec.val(slot, 256),
+            };
+          } else if (type.type == VarTypeKind.ArrayTypeName) {
+            return {
+              type: SolidityExprType.ARRAY,
+              varType: type,
+              globals: accessible.globals,
+              contractAddress: accessible.contractAddress,
+              slot: z3.BitVec.val(slot, 256),
+            };
+          } else {
+            throw new UnimplementedError('Accessing user defined type variables in contracts');
+          }
         }
       case AccessibleSolidityExprType.STRUCT:
         throw new UnimplementedError('Accessing structs');
