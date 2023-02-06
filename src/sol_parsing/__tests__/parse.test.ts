@@ -17,5 +17,6 @@ describe('Try creating generators', () => {
     expect(() => getSolidityData(solcOutput)).not.toThrow();
 
     const solidityData = getSolidityData(solcOutput);
+    expect(() => JSON.stringify(solidityData)).not.toThrow();
   });
 });

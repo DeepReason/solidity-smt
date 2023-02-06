@@ -72,7 +72,7 @@ export function typeNameToSolidityType(typeName: TypeName): SolidityVarType {
     return {
       type: VarTypeKind.ArrayTypeName,
       baseType: typeNameToSolidityType(arrayTypeName.vBaseType),
-      length: arrayTypeName.vLength,
+      length: undefined, //arrayTypeName.vLength,
     };
   }
   if (typeName.type === 'ElementaryTypeName') {
