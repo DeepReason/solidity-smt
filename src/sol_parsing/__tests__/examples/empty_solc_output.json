@@ -1,0 +1,250 @@
+{
+  "abi": [
+    {
+      "inputs": [],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "inputs": [],
+      "name": "withdraw",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "stateMutability": "payable",
+      "type": "receive"
+    }
+  ],
+  "bytecode": {
+    "object": "0x6080604052348015600f57600080fd5b50606e80601d6000396000f3fe60806040526004361060205760003560e01c80633ccfd60b14602b57600080fd5b36602657005b600080fd5b348015603657600080fd5b00fea264697066735822122017272720bd8d37405ea247fa2e83d3ec29d2f4fdfaee092bbbe890d177a259c364736f6c63430008120033",
+    "sourceMap": "247:465:85:-:0;;;332:108;;;;;;;;;;247:465;;;;;;",
+    "linkReferences": {}
+  },
+  "deployedBytecode": {
+    "object": "0x60806040526004361060205760003560e01c80633ccfd60b14602b57600080fd5b36602657005b600080fd5b348015603657600080fd5b00fea264697066735822122017272720bd8d37405ea247fa2e83d3ec29d2f4fdfaee092bbbe890d177a259c364736f6c63430008120033",
+    "sourceMap": "247:465:85:-:0;;;;;;;;;;;;;;;;;;;;;;;;;;;;;444:230;;;;;;;;;;",
+    "linkReferences": {}
+  },
+  "methodIdentifiers": {
+    "withdraw()": "3ccfd60b"
+  },
+  "rawMetadata": "{\"compiler\":{\"version\":\"0.8.18+commit.87f61d96\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"withdraw\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"stateMutability\":\"payable\",\"type\":\"receive\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"src/verification/Spec.sol\":\"Spec\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[\":ds-test/=lib/forge-std/lib/ds-test/src/\",\":forge-std/=lib/forge-std/src/\",\":openzeppelin-contracts-upgradeable/=node_modules/openzeppelin-upgradeable/\",\":openzeppelin-contracts/=node_modules/@openzeppelin/contracts/\",\":solmate/=lib/solmate/src/\"]},\"sources\":{\"src/verification/Spec.sol\":{\"keccak256\":\"0xecc954ed0862ddf4a49b86fa967794c7e046d3408c7c9801eb8515c61906978d\",\"urls\":[\"bzz-raw://82e2451c3392cf0ecc324b184e9fcba5be5a1157462705ff71528f62ecc3bac3\",\"dweb:/ipfs/QmV6FNU1eDS563tjfX2NQxJQ2xfQxxXCRJNjjZJastrXw7\"]}},\"version\":1}",
+  "metadata": {
+    "compiler": {
+      "version": "0.8.18+commit.87f61d96"
+    },
+    "language": "Solidity",
+    "output": {
+      "abi": [
+        {
+          "inputs": [],
+          "stateMutability": "nonpayable",
+          "type": "constructor"
+        },
+        {
+          "inputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function",
+          "name": "withdraw"
+        },
+        {
+          "inputs": [],
+          "stateMutability": "payable",
+          "type": "receive"
+        }
+      ],
+      "devdoc": {
+        "kind": "dev",
+        "methods": {},
+        "version": 1
+      },
+      "userdoc": {
+        "kind": "user",
+        "methods": {},
+        "version": 1
+      }
+    },
+    "settings": {
+      "remappings": [
+        ":ds-test/=lib/forge-std/lib/ds-test/src/",
+        ":forge-std/=lib/forge-std/src/",
+        ":openzeppelin-contracts-upgradeable/=node_modules/openzeppelin-upgradeable/",
+        ":openzeppelin-contracts/=node_modules/@openzeppelin/contracts/",
+        ":solmate/=lib/solmate/src/"
+      ],
+      "optimizer": {
+        "enabled": true,
+        "runs": 200
+      },
+      "metadata": {
+        "bytecodeHash": "ipfs"
+      },
+      "compilationTarget": {
+        "src/verification/Spec.sol": "Spec"
+      },
+      "libraries": {}
+    },
+    "sources": {
+      "src/verification/Spec.sol": {
+        "keccak256": "0xecc954ed0862ddf4a49b86fa967794c7e046d3408c7c9801eb8515c61906978d",
+        "urls": [
+          "bzz-raw://82e2451c3392cf0ecc324b184e9fcba5be5a1157462705ff71528f62ecc3bac3",
+          "dweb:/ipfs/QmV6FNU1eDS563tjfX2NQxJQ2xfQxxXCRJNjjZJastrXw7"
+        ],
+        "license": null
+      }
+    },
+    "version": 1
+  },
+  "ast": {
+    "absolutePath": "src/verification/Spec.sol",
+    "id": 44533,
+    "exportedSymbols": {
+      "Spec": [
+        44532
+      ]
+    },
+    "nodeType": "SourceUnit",
+    "src": "0:713:85",
+    "nodes": [
+      {
+        "id": 44519,
+        "nodeType": "PragmaDirective",
+        "src": "0:24:85",
+        "nodes": [],
+        "literals": [
+          "solidity",
+          "^",
+          "0.8",
+          ".12"
+        ]
+      },
+      {
+        "id": 44532,
+        "nodeType": "ContractDefinition",
+        "src": "247:465:85",
+        "nodes": [
+          {
+            "id": 44523,
+            "nodeType": "FunctionDefinition",
+            "src": "332:108:85",
+            "nodes": [],
+            "body": {
+              "id": 44522,
+              "nodeType": "Block",
+              "src": "346:94:85",
+              "nodes": [],
+              "statements": []
+            },
+            "implemented": true,
+            "kind": "constructor",
+            "modifiers": [],
+            "name": "",
+            "nameLocation": "-1:-1:-1",
+            "parameters": {
+              "id": 44520,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "343:2:85"
+            },
+            "returnParameters": {
+              "id": 44521,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "346:0:85"
+            },
+            "scope": 44532,
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "public"
+          },
+          {
+            "id": 44527,
+            "nodeType": "FunctionDefinition",
+            "src": "444:230:85",
+            "nodes": [],
+            "body": {
+              "id": 44526,
+              "nodeType": "Block",
+              "src": "471:203:85",
+              "nodes": [],
+              "statements": []
+            },
+            "functionSelector": "3ccfd60b",
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "withdraw",
+            "nameLocation": "453:8:85",
+            "parameters": {
+              "id": 44524,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "461:2:85"
+            },
+            "returnParameters": {
+              "id": 44525,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "471:0:85"
+            },
+            "scope": 44532,
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "public"
+          },
+          {
+            "id": 44531,
+            "nodeType": "FunctionDefinition",
+            "src": "680:29:85",
+            "nodes": [],
+            "body": {
+              "id": 44530,
+              "nodeType": "Block",
+              "src": "707:2:85",
+              "nodes": [],
+              "statements": []
+            },
+            "implemented": true,
+            "kind": "receive",
+            "modifiers": [],
+            "name": "",
+            "nameLocation": "-1:-1:-1",
+            "parameters": {
+              "id": 44528,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "687:2:85"
+            },
+            "returnParameters": {
+              "id": 44529,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "707:0:85"
+            },
+            "scope": 44532,
+            "stateMutability": "payable",
+            "virtual": false,
+            "visibility": "external"
+          }
+        ],
+        "abstract": false,
+        "baseContracts": [],
+        "canonicalName": "Spec",
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "fullyImplemented": true,
+        "linearizedBaseContracts": [
+          44532
+        ],
+        "name": "Spec",
+        "nameLocation": "256:4:85",
+        "scope": 44533,
+        "usedErrors": []
+      }
+    ]
+  },
+  "id": 85
+}

@@ -27,7 +27,7 @@ export function userTypeDefinitionToBytes(def: UserTypeDefinition): number {
   } else {
     const structDefinition = def as StructDefinition;
     let bytes = 0;
-    for (const variableDecl of structDefinition.vMembers) {
+    for (const variableDecl of structDefinition.vMembers || []) {
       const newBytes = varDeclToBytes(variableDecl);
       const nextSlot = bytes % 32 === 0 ? bytes : (bytes & ~0x1f) + 32;
       if (bytes + newBytes <= nextSlot) {
@@ -77,7 +77,7 @@ export function elementaryTypeNameToBytes(name: string): number {
   }
   if (name.startsWith('bytes')) {
     const vStr = name.substring(5) || '32';
-    const re = /^[1-9]\d+$/;
+    const re = /^[1-9]\d*$/;
     if (!re.test(vStr)) {
       throw new Error('Invalid elementary type: ' + name);
     }
