@@ -439,7 +439,7 @@ export async function translateToZ3(
       }
 
       return {
-        error: parsedInput.parseErrors.map(getNiceMessage).join('\n'),
+        error: parsedInput.parseErrors.concat(parsedInput.lexErrors).map(getNiceMessage).join('\n'),
         warnings,
       };
     }
@@ -465,6 +465,7 @@ export async function translateToZ3(
       warnings,
     };
   } catch (e) {
+    console.log(e);
     return {
       error: '' + e,
       warnings,

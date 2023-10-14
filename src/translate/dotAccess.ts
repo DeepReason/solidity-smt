@@ -174,8 +174,8 @@ export function dotAccess(accessible: SolidityExpr, member: string, ctx: Transla
             let expr = accessible.globals.storage
               .select(accessible.contractAddress)
               .select(z3.BitVec.val(slot, 256)) as BitVec;
-            if (varData.slot.intraSlot) {
-              const offset = varData.slot.intraSlot[0];
+            if (varData.slot.intraSlot || elementaryTypeNameToBytes(type.name) < 256) {
+              const offset = varData.slot.intraSlot?.[0] ?? 0;
               const intraSlotEnd = offset + elementaryTypeNameToBytes(type.name);
               expr = z3.Extract(255 - offset * 8, 256 - intraSlotEnd * 8, expr);
             }
