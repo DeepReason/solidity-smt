@@ -3,3 +3,4 @@ node_modules
 generated
 *.tgz
 build/
+src/sol_parsing/__tests__/examples/*.json

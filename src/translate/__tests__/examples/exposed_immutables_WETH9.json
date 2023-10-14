@@ -7,49 +7,17 @@
     "1117738294": "(declare-fun __deepreason__placeholder__ ((_ BitVec 160)) Bool) (declare-fun WETH9_t4 () (_ BitVec 160)) (assert (__deepreason__placeholder__ WETH9_t4))",
     "1155051083": "(declare-fun __deepreason__placeholder__ ((_ BitVec 160)) Bool) (declare-fun keccak256_424 ((_ BitVec 424)) (_ BitVec 256)) (declare-fun Spec_addr () (_ BitVec 160)) (declare-fun deployer () (_ BitVec 160)) (declare-fun nonces@init () (Array (_ BitVec 160) (_ BitVec 256))) (assert (let ((a!1 (select (store nonces@init deployer (bvadd #x0000000000000000000000000000000000000000000000000000000000000001 (select nonces@init deployer))) Spec_addr))) (__deepreason__placeholder__ ((_ extract 159 0) (keccak256_424 (concat #xb4 Spec_addr a!1))))))"
   },
-  "exposedImmutables": {
-    "WETH9": {},
-    "Spec": {
-      "Spec": {
-        "weth": {
-          "1201019808": 3387983551
-        }
-      }
-    }
-  },
+  "exposedImmutables": { "WETH9": {}, "Spec": { "Spec": { "weth": { "1201019808": 3387983551 } } } },
   "deploymentAddresses": {
     "WETH9": {
-      "main": {
-        "address": 2344858191,
-        "expanded": 3890192381
-      },
-      "deployments": {
-        "WETH9": [
-          {
-            "address": 2344858191,
-            "expanded": 3890192381
-          }
-        ]
-      }
+      "main": { "address": 2344858191, "expanded": 3890192381 },
+      "deployments": { "WETH9": [{ "address": 2344858191, "expanded": 3890192381 }] }
     },
     "Spec": {
-      "main": {
-        "address": 1201019808,
-        "expanded": 3890192381
-      },
+      "main": { "address": 1201019808, "expanded": 3890192381 },
       "deployments": {
-        "Spec": [
-          {
-            "address": 1201019808,
-            "expanded": 3890192381
-          }
-        ],
-        "WETH9": [
-          {
-            "address": 1117738294,
-            "expanded": 1155051083
-          }
-        ]
+        "Spec": [{ "address": 1201019808, "expanded": 3890192381 }],
+        "WETH9": [{ "address": 1117738294, "expanded": 1155051083 }]
       }
     }
   }

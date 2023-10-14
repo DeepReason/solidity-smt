@@ -191,7 +191,7 @@ describe('Test translate', () => {
 
       it('Non-expression', async () => {
         const result = await erroredTranslation('test', 'VaultBasic');
-        expect(result.error).toBe('Error: Expression is a mapping');
+        expect(result.error).toBe('Error: Expression is a mapping. It must be a simple value.');
       });
     });
   });
@@ -226,9 +226,9 @@ describe('Test translate', () => {
     it('Translate expression', async () => {
       const result = await unerroredTranslation('msg.sender', 'WETH9');
       expect(result.warnings).toEqual([
-        'skipping variable name',
-        'skipping variable symbol',
-        'skipping variable decimals',
+        'skipping variable name (Constant variables not supported)',
+        'skipping variable symbol (Constant variables not supported)',
+        'skipping variable decimals (Constant variables not supported)',
       ]);
       expect(result.expr.eqIdentity(SENDER)).toBeTruthy();
     });
@@ -236,9 +236,9 @@ describe('Test translate', () => {
     it('Translate comparison', async () => {
       const result = await unerroredTranslation('balanceOf[msg.sender] <= address(this).balance', 'WETH9');
       expect(result.warnings).toEqual([
-        'skipping variable name',
-        'skipping variable symbol',
-        'skipping variable decimals',
+        'skipping variable name (Constant variables not supported)',
+        'skipping variable symbol (Constant variables not supported)',
+        'skipping variable decimals (Constant variables not supported)',
       ]);
       expect(
         result.expr.eqIdentity(

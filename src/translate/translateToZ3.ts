@@ -66,7 +66,7 @@ function fillInitialVarScope(ctx: TranslationContext) {
       scope.set(varName, dotAccess(contract, varName, ctx));
     } catch (e) {
       if (e instanceof UnimplementedError) {
-        ctx.warnings.push('skipping variable ' + varName);
+        ctx.warnings.push('skipping variable ' + varName + ` (${e.message})`);
       } else {
         throw e;
       }
@@ -385,13 +385,13 @@ export function parseResultToZ3(parseResult: ExprResult, ctx: TranslationContext
   let solidityExpr = nodeToSolidityExpr(node, ctx);
   switch (solidityExpr.type) {
     case SolidityExprType.TYPE:
-      throw new Error('Expression is not a value');
+      throw new Error('Expression is not a simple value');
     case SolidityExprType.MAPPING:
-      throw new Error('Expression is a mapping');
+      throw new Error('Expression is a mapping. It must be a simple value.');
     case SolidityExprType.ARRAY:
-      throw new Error('Expression is an array');
+      throw new Error('Expression is an array. It must be a simple value.');
     case SolidityExprType.ACCESSIBLE:
-      throw new Error('Expression is a ' + solidityExpr.accessibleType);
+      throw new Error('Expression is a ' + solidityExpr.accessibleType + '. It must be a simple value.');
     case SolidityExprType.ELEMENTARY:
       break;
   }
@@ -457,6 +457,7 @@ export async function translateToZ3(
       varScope: new Map(),
       z3,
     };
+
     const expr = parseResultToZ3(parsedInput, ctx);
 
     return {

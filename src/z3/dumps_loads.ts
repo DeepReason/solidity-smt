@@ -59,6 +59,7 @@ export function loads_expr(z3: Z3Obj, expr_str: string, force_list: boolean = fa
   if (expr.numArgs() == 1 && !force_list) {
     return expr.arg(0);
   }
+  console.log(expr_str + "\n\t " + expr.children().length)
   return expr.children();
 }
 

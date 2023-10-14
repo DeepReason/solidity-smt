@@ -41,8 +41,8 @@
   "dependencies": {
     "commander": "^9.4.1",
     "solc": "^0.8.17",
-    "z3-solver": "file:z3/src/api/js/z3-solver-0.1.0.tgz",
-    "solc-typed-ast": "^11.0.2"
+    "solc-typed-ast": "^11.0.2",
+    "z3-solver": "^4.12.2"
   },
   "files": [
     "build/**/*"

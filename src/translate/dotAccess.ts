@@ -25,10 +25,11 @@ import { UserDefinedTypeKind } from '../sol_parsing/sol_parsing_types';
 import { Expr } from 'z3-solver';
 import { Mutability } from 'solc-typed-ast';
 import { resizeZ3BitVec } from './valueType';
+import { repr_of_expr } from '../z3';
 
 export class UnimplementedError extends Error {
   constructor(message: string) {
-    super('Unimplemented ' + message);
+    super(message);
     this.name = 'UnimplementedError';
   }
 }
